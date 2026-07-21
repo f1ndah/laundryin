@@ -58,7 +58,9 @@ class AppDialog {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: title != null ? Text(title, style: AppTextStyles.subheading) : null,
-      content: content.length == 1 ? content.first : Column(mainAxisSize: MainAxisSize.min, children: content),
+      content: SingleChildScrollView(
+        child: content.length == 1 ? content.first : Column(mainAxisSize: MainAxisSize.min, children: content),
+      ),
       actions: actions,
     );
   }

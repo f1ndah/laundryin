@@ -9,6 +9,7 @@ import '../../widgets/app_shimmer.dart';
 import '../../widgets/app_card.dart';
 import '../lokasi_page.dart';
 import '../pricelist_page.dart';
+import '../../widgets/app_snackbar.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -19,6 +20,7 @@ class HomeTab extends StatefulWidget {
 
 class HomeTabState extends State<HomeTab> {
   List<Map<String, dynamic>> _recent = [];
+  List<Map<String, dynamic>> _banners = [];
   String _userName = 'Pelanggan';
   int _saldo = 0;
   bool _loading = true;
@@ -45,12 +47,14 @@ class HomeTabState extends State<HomeTab> {
     final data = await DbService.getUserTransactions(user.id);
     final profile = await AuthService.getProfile();
     final saldo = await DbService.getSaldo(user.id);
+    final banners = await DbService.getBanners();
 
     if (mounted) {
       setState(() {
         _recent = data.take(3).toList();
         _userName = profile?['nama'] ?? 'Pelanggan';
         _saldo = saldo;
+        _banners = banners;
         _loading = false;
       });
     }
@@ -94,12 +98,7 @@ class HomeTabState extends State<HomeTab> {
                   IconButton(
                     icon: const Icon(Icons.notifications_outlined, color: Colors.white),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Fitur notifikasi dalam pengembangan 🛠️'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                      AppSnackbar.info(context, 'Fitur notifikasi dalam pengembangan 🛠️');
                     },
                   ),
                 ],
@@ -119,13 +118,7 @@ class HomeTabState extends State<HomeTab> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
+                        // Removed shadow
                       ),
                       child: Row(
                         children: [
@@ -149,105 +142,96 @@ class HomeTabState extends State<HomeTab> {
                         ],
                       ),
                     ),
-                    
-                    const SizedBox(height: 24),
+                    if (_banners.isNotEmpty)
+                      const SizedBox(height: 24),
 
                     // Banner Carousel
-                    SizedBox(
-                      height: 110,
-                      child: PageView.builder(
-                        padEnds: false,
-                        controller: _bannerController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentBannerIndex = index;
-                          });
-                        },
-                        itemCount: 3,
-                        itemBuilder: (context, index) {
-                          final banners = [
-                            {
-                              'title': 'Diskon 20% Cuci Bed Cover!',
-                              'subtitle': 'Promo akhir bulan khusus untuk Anda.',
-                              'color': AppColors.accent,
-                              'icon': Icons.local_offer,
-                            },
-                            {
-                              'title': 'Laundry Ekspres 24 Jam',
-                              'subtitle': 'Pakaian bersih dan wangi dalam sehari.',
-                              'color': AppColors.secondary,
-                              'icon': Icons.speed,
-                            },
-                            {
-                              'title': 'Gratis Antar Jemput',
-                              'subtitle': 'Untuk jarak maksimal 5 km dari toko.',
-                              'color': AppColors.success,
-                              'icon': Icons.delivery_dining,
-                            }
-                          ];
-                          final b = banners[index];
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: b['color'] as Color,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        b['title'] as String,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                    if (_banners.isNotEmpty)
+                      AspectRatio(
+                        aspectRatio: 2 / 1,
+                        child: PageView.builder(
+                          padEnds: false,
+                          controller: _bannerController,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentBannerIndex = index;
+                            });
+                          },
+                          itemCount: _banners.length,
+                          itemBuilder: (context, index) {
+                            final b = _banners[index];
+                            final imageUrl = b['image_url'] as String?;
+
+                            return GestureDetector(
+                              onTap: () {
+                                if (imageUrl != null && imageUrl.isNotEmpty) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => Dialog(
+                                      backgroundColor: Colors.transparent,
+                                      insetPadding: const EdgeInsets.all(16),
+                                      child: Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          InteractiveViewer(
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(16),
+                                              child: Image.network(imageUrl, fit: BoxFit.contain),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                            onPressed: () => Navigator.pop(context),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        b['subtitle'] as String,
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  );
+                                }
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(16),
                                 ),
-                                Icon(
-                                  b['icon'] as IconData,
-                                  color: Colors.white.withOpacity(0.3),
-                                  size: 48,
-                                )
-                              ],
-                            ),
-                          );
-                        },
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: imageUrl != null && imageUrl.isNotEmpty
+                                      ? Image.network(
+                                          imageUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return const Center(child: Icon(Icons.broken_image, color: Colors.white, size: 32));
+                                          },
+                                        )
+                                      : const Center(child: Icon(Icons.image, color: Colors.white, size: 32)),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                    if (_banners.isNotEmpty)
+                      const SizedBox(height: 12),
                     
                     // Banner Indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(3, (index) {
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          height: 6,
-                          width: _currentBannerIndex == index ? 16 : 6,
-                          decoration: BoxDecoration(
-                            color: _currentBannerIndex == index ? AppColors.primary : Colors.grey.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        );
-                      }),
-                    ),
+                    if (_banners.isNotEmpty)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(_banners.length, (index) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            height: 6,
+                            width: _currentBannerIndex == index ? 16 : 6,
+                            decoration: BoxDecoration(
+                              color: _currentBannerIndex == index ? AppColors.primary : Colors.grey.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        }),
+                      ),
                     
                     const SizedBox(height: 24),
                     

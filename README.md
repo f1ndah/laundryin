@@ -112,6 +112,12 @@ assets/images/    # logo, QRIS, dll
 - Dialog tentang aplikasi + cek versi vs GitHub release/tag
 - Integrasi notifikasi WhatsApp ke admin saat ada transaksi baru.
 
+### [1.0.1] — Banner & Voucher (Terbaru)
+- Tambahan fitur Banner/Promosi (Admin bisa unggah banner, pelanggan melihat carousel banner di beranda).
+- Banner mendukung aspect ratio dinamis, kompresi otomatis (max 1200px, 70% quality), dan fitur *preview* *zoom-able* di pelanggan.
+- Tambahan fitur Voucher & Diskon (Admin bisa membuat kode unik, mengatur potongan harga tetap, dan kuota pemakaian).
+- Pelanggan bisa melakukan klaim voucher pada form transaksi dan mendapatkan potongan harga langsung.
+- Desain *card* transaksi Admin diselaraskan dengan pelanggan (*flat design*, tanpa *shadow*).
 ## Catatan
 
 - `lib/services/supabase_config.dart` **tidak** di-commit (lihat `.gitignore`).

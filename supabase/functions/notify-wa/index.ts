@@ -18,14 +18,19 @@ interface Payload {
     metode: string;
     status: string;
     tanggal: string;
+    toko_id?: number;
   };
 }
 
-async function getAdminPhone(supabaseUrl: string, serviceRoleKey: string): Promise<string | null> {
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/toko?select=nomor_admin&nomor_admin=not.is.null&limit=1`,
-    { headers: { apikey: serviceRoleKey, authorization: `Bearer ${serviceRoleKey}` } }
-  );
+async function getAdminPhone(supabaseUrl: string, serviceRoleKey: string, tokoId?: number): Promise<string | null> {
+  let url = `${supabaseUrl}/rest/v1/toko?select=nomor_admin&nomor_admin=not.is.null&limit=1`;
+  if (tokoId) {
+    url = `${supabaseUrl}/rest/v1/toko?select=nomor_admin&id=eq.${tokoId}&limit=1`;
+  }
+  
+  const res = await fetch(url, { 
+    headers: { apikey: serviceRoleKey, authorization: `Bearer ${serviceRoleKey}` } 
+  });
   const rows = await res.json();
   return rows?.[0]?.nomor_admin ?? null;
 }
@@ -84,7 +89,7 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-    const adminPhone = await getAdminPhone(supabaseUrl, serviceRoleKey);
+    const adminPhone = await getAdminPhone(supabaseUrl, serviceRoleKey, rec.toko_id);
     console.log(`[Webhook] Nomor Admin ditemukan: ${adminPhone}`);
     if (!adminPhone) {
       console.log("No admin phone configured");

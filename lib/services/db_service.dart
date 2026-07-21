@@ -137,4 +137,70 @@ class DbService {
         .eq('role', 'pelanggan')
         .order('created_at', ascending: false);
   }
+
+  // ========== BANNERS ==========
+
+  static Future<List<Map<String, dynamic>>> getBanners() async {
+    return await _supabase.from('banners').select().order('created_at', ascending: true);
+  }
+
+  static Future<Map<String, dynamic>> insertBanner(Map<String, dynamic> data) async {
+    final rows = await _supabase.from('banners').insert(data).select();
+    return rows.first;
+  }
+
+  static Future<void> updateBanner(int id, Map<String, dynamic> data) async {
+    await _supabase.from('banners').update(data).eq('id', id);
+  }
+
+  static Future<void> deleteBanner(int id) async {
+    await _supabase.from('banners').delete().eq('id', id);
+  }
+
+  static Future<String> uploadBannerImage(String fileName, dynamic fileBytes) async {
+    await _supabase.storage.from('banners').uploadBinary(
+      fileName,
+      fileBytes,
+      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+    );
+    return _supabase.storage.from('banners').getPublicUrl(fileName);
+  }
+
+  // --- VOUCHERS ---
+  static Future<List<Map<String, dynamic>>> getVouchers() async {
+    final res = await _supabase.from('vouchers').select().order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(res);
+  }
+
+  static Future<void> insertVoucher(Map<String, dynamic> data) async {
+    await _supabase.from('vouchers').insert(data);
+  }
+
+  static Future<void> updateVoucher(int id, Map<String, dynamic> data) async {
+    await _supabase.from('vouchers').update(data).eq('id', id);
+  }
+
+  static Future<void> deleteVoucher(int id) async {
+    await _supabase.from('vouchers').delete().eq('id', id);
+  }
+
+  static Future<Map<String, dynamic>?> checkVoucher(String kode) async {
+    final res = await _supabase
+        .from('vouchers')
+        .select()
+        .eq('kode', kode.toUpperCase())
+        .eq('is_active', true)
+        .gt('kuota', 0)
+        .maybeSingle();
+    return res;
+  }
+
+  static Future<void> useVoucher(int voucherId) async {
+    // Kurangi kuota voucher (ini idealnya pakai RPC di server, tapi untuk prototype ini aman)
+    final voucher = await _supabase.from('vouchers').select('kuota').eq('id', voucherId).single();
+    final currentKuota = voucher['kuota'] as int;
+    if (currentKuota > 0) {
+      await _supabase.from('vouchers').update({'kuota': currentKuota - 1}).eq('id', voucherId);
+    }
+  }
 }

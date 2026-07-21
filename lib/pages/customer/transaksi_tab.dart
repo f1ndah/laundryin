@@ -12,6 +12,8 @@ import '../../widgets/app_card.dart';
 import '../../widgets/app_input.dart';
 import '../../widgets/app_list_view.dart';
 import '../../widgets/app_bottom_sheet.dart';
+import '../../widgets/app_fab.dart';
+import '../../widgets/app_snackbar.dart';
 class TransaksiTab extends StatefulWidget {
   const TransaksiTab();
 
@@ -24,6 +26,7 @@ class TransaksiTabState extends State<TransaksiTab> {
   String _filter = 'Semua';
   List<Map<String, dynamic>> _transactions = [];
   List<Map<String, dynamic>> _layanan = [];
+  List<Map<String, dynamic>> _tokoList = [];
   bool _loading = true;
 
   final _filters = ['Semua', 'Menunggu', 'Proses', 'Selesai', 'Batal'];
@@ -39,10 +42,12 @@ class TransaksiTabState extends State<TransaksiTab> {
     if (user == null) return;
     final data = await DbService.getUserTransactions(user.id);
     final layanan = await DbService.getLayanan();
+    final toko = await DbService.getTokoList();
     if (mounted) {
       setState(() {
         _transactions = data;
         _layanan = layanan;
+        _tokoList = toko;
         _loading = false;
       });
     }
@@ -51,11 +56,7 @@ class TransaksiTabState extends State<TransaksiTab> {
   Future<void> _batalTransaksi(int id) async {
     await DbService.batalTransaction(id);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Transaksi dibatalkan. Dana dikembalikan ke saldo.'),
-            backgroundColor: Colors.green),
-      );
+      AppSnackbar.success(context, 'Transaksi dibatalkan. Dana dikembalikan ke saldo.');
     }
     _loadData();
   }
@@ -146,19 +147,27 @@ class TransaksiTabState extends State<TransaksiTab> {
 
   void _formTransaksi() {
     if (_layanan.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Belum ada data layanan')),
-      );
+      AppSnackbar.error(context, 'Belum ada data layanan');
+      return;
+    }
+    if (_tokoList.isEmpty) {
+      AppSnackbar.error(context, 'Belum ada data toko/cabang');
       return;
     }
     final alamatCtrl = TextEditingController();
     final beratCtrl = TextEditingController();
     String jenis = _layanan.first['jenis'] as String;
+    int tokoId = _tokoList.first['id'] as int;
     // ponytail: cashless + saldo refund
     String metode = 'QRIS';
     int saldo = 0;
     var saldoLoaded = false;
     final userId = AuthService.currentUser?.id;
+
+    final voucherCtrl = TextEditingController();
+    int potonganVoucher = 0;
+    int? voucherId;
+    String voucherMessage = '';
 
     AppDialog.show(
       context: context,
@@ -174,6 +183,23 @@ class TransaksiTabState extends State<TransaksiTab> {
             context: ctx,
             title: 'Tambah Transaksi',
             content: [
+              DropdownButtonFormField<int>(
+                value: tokoId,
+                items: _tokoList
+                    .map((e) => DropdownMenuItem<int>(
+                          value: e['id'] as int,
+                          child: Text(e['nama'] as String),
+                        ))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) setDialogState(() => tokoId = val);
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Pilih Cabang Toko',
+                  prefixIcon: Icon(Icons.storefront),
+                ),
+              ),
+              const SizedBox(height: 12),
               AppInput(
                 controller: alamatCtrl,
                 label: 'Alamat Jemput/Antar',
@@ -219,6 +245,52 @@ class TransaksiTabState extends State<TransaksiTab> {
                   prefixIcon: Icon(Icons.payment),
                 ),
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppInput(
+                      controller: voucherCtrl,
+                      label: 'Kode Voucher (Opsional)',
+                      prefixIcon: Icons.local_activity_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  AppButton(
+                    label: 'Klaim',
+                    onPressed: () async {
+                      final k = voucherCtrl.text.trim();
+                      if (k.isEmpty) return;
+                      final v = await DbService.checkVoucher(k);
+                      if (v != null) {
+                        setDialogState(() {
+                          potonganVoucher = (v['potongan'] as num).toInt();
+                          voucherId = (v['id'] as num).toInt();
+                          voucherMessage = 'Diskon ${formatRupiah(potonganVoucher)} diterapkan!';
+                        });
+                      } else {
+                        setDialogState(() {
+                          potonganVoucher = 0;
+                          voucherId = null;
+                          voucherMessage = 'Voucher tidak valid / kuota habis';
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
+              if (voucherMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    voucherMessage,
+                    style: TextStyle(
+                      color: voucherId != null ? AppColors.success : AppColors.danger,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
             ],
             actions: [
               AppButton(
@@ -233,19 +305,18 @@ class TransaksiTabState extends State<TransaksiTab> {
                       double.tryParse(beratCtrl.text.replaceAll(',', '.')) ??
                           0.0;
                   if (beratVal <= 0 || alamatCtrl.text.trim().isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Lengkapi semua data')),
-                    );
+                    AppSnackbar.error(context, 'Lengkapi semua data');
                     return;
                   }
                   final layanan = _layanan.firstWhere(
                       (e) => e['jenis'] == jenis,
                       orElse: () => {'harga': 0});
-                  final totalHarga =
-                      (beratVal * (layanan['harga'] as int)).toInt();
+                  int totalHarga = (beratVal * (layanan['harga'] as int)).toInt() - potonganVoucher;
+                  if (totalHarga < 0) totalHarga = 0;
                   final alamat = alamatCtrl.text.trim();
                   final metodeBayar = metode;
                   final jenisCucian = jenis;
+                  final selectedTokoId = tokoId;
                   final user = AuthService.currentUser;
                   if (user == null) return;
 
@@ -261,20 +332,22 @@ class TransaksiTabState extends State<TransaksiTab> {
                         'harga': totalHarga,
                         'metode': metodeBayar,
                         'status': 'Menunggu',
+                        'toko_id': selectedTokoId,
                         'tanggal': DateTime.now().toIso8601String(),
                       });
+                      if (voucherId != null) {
+                        await DbService.useVoucher(voucherId!);
+                      }
                       if (!mounted) return;
                       _loadData();
                       _showTicket(inserted['kode'] ?? inserted['id'], totalHarga);
                       // ponytail: fire-and-forget WA notif
-                      Supabase.instance.client.functions.invoke('wa',
+                      await Supabase.instance.client.functions.invoke('wa',
                         body: {'type': 'INSERT', 'table': 'transactions', 'record': inserted},
-                      );
+                      ).catchError((e) => debugPrint('WA Error: $e'));
                     } catch (e) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Gagal: $e'), backgroundColor: Colors.red),
-                        );
+                        AppSnackbar.error(context, 'Gagal: $e');
                       }
                     }
                   }
@@ -283,12 +356,7 @@ class TransaksiTabState extends State<TransaksiTab> {
                     final ok = await DbService.deductSaldo(user.id, totalHarga);
                     if (!ok) {
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  'Saldo tidak cukup (${formatRupiah(saldo)})'),
-                              backgroundColor: Colors.red),
-                        );
+                        AppSnackbar.error(context, 'Saldo tidak cukup (${formatRupiah(saldo)})');
                       }
                       return;
                     }
@@ -490,13 +558,10 @@ class TransaksiTabState extends State<TransaksiTab> {
           );
         }).toList(),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: AppFab(
         onPressed: () => _formTransaksi(),
-        icon: const Icon(Icons.add),
-        label: const Text('Transaksi'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 2,
+        icon: Icons.add,
+        label: 'Transaksi',
       ),
     );
   }

@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:uuid/uuid.dart';
 import '../theme.dart';
 import '../services/auth_service.dart';
 import '../services/db_service.dart';
@@ -12,6 +16,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_empty_state.dart';
 import '../widgets/app_input.dart';
+
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
   @override
@@ -132,20 +137,23 @@ class _TransaksiTabState extends State<_TransaksiTab> {
                 ),
                 const SizedBox(height: 12),
                 Row(children: [
-                  Expanded(child: Card(color: Colors.orange.shade50, child: Padding(padding: const EdgeInsets.all(8), child: Column(children: [
+                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
                     Text('$menunggu', style: AppTextStyles.heading.copyWith(color: Colors.orange.shade700)),
-                    const Text('Menunggu', style: TextStyle(fontSize: 10)),
-                  ])))),
+                    const SizedBox(height: 4),
+                    const Text('Menunggu', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                  ]))),
                   const SizedBox(width: 8),
-                  Expanded(child: Card(color: Colors.blue.shade50, child: Padding(padding: const EdgeInsets.all(8), child: Column(children: [
+                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
                     Text('$proses', style: AppTextStyles.heading.copyWith(color: Colors.blue.shade700)),
-                    const Text('Proses', style: TextStyle(fontSize: 10)),
-                  ])))),
+                    const SizedBox(height: 4),
+                    const Text('Proses', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                  ]))),
                   const SizedBox(width: 8),
-                  Expanded(child: Card(color: Colors.green.shade50, child: Padding(padding: const EdgeInsets.all(8), child: Column(children: [
+                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
                     Text('$selesai', style: AppTextStyles.heading.copyWith(color: Colors.green.shade700)),
-                    const Text('Selesai', style: TextStyle(fontSize: 10)),
-                  ])))),
+                    const SizedBox(height: 4),
+                    const Text('Selesai', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                  ]))),
                 ]),
                 const SizedBox(height: 16),
                 if (_transactions.isEmpty)
@@ -334,6 +342,16 @@ class _ProfilTabState extends State<_ProfilTab> {
                     leadingIcon: Icons.store,
                     title: 'Toko',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _TokoPage())),
+                  ),
+                  AppListTile(
+                    leadingIcon: Icons.campaign,
+                    title: 'Banners & Promosi',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _BannerPage())),
+                  ),
+                  AppListTile(
+                    leadingIcon: Icons.discount_outlined,
+                    title: 'Voucher & Diskon',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _VoucherPage())),
                   ),
                   AppListTile(
                     leadingIcon: Icons.logout,
@@ -616,6 +634,295 @@ class _TokoPageState extends State<_TokoPage> {
             actions: [
               SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _ubahToko(item)),
               SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusToko(item)),
+            ],
+          ),
+        )).toList(),
+      ),
+    );
+  }
+}
+
+class _BannerPage extends StatefulWidget {
+  const _BannerPage();
+
+  @override
+  State<_BannerPage> createState() => _BannerPageState();
+}
+
+class _BannerPageState extends State<_BannerPage> {
+  List<Map<String, dynamic>> _banners = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final data = await DbService.getBanners();
+    if (mounted) setState(() { _banners = data; _loading = false; });
+  }
+
+  Future<void> _uploadBanner() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70, // Kompresi tahap 1 saat pilih gambar
+    );
+    
+    if (image == null) return;
+    
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: const CropAspectRatio(ratioX: 2, ratioY: 1),
+      compressQuality: 70, // Kompresi tahap 2 setelah dipotong
+      compressFormat: ImageCompressFormat.jpg,
+      maxWidth: 1200,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Banner',
+          toolbarColor: AppColors.primary,
+          toolbarWidgetColor: Colors.white,
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: 'Crop Banner',
+          aspectRatioLockEnabled: true,
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      if (mounted) {
+        setState(() => _loading = true);
+        try {
+          final fileName = '${const Uuid().v4()}.jpg';
+          final file = File(croppedFile.path);
+          final imageUrl = await DbService.uploadBannerImage(fileName, file.readAsBytesSync());
+          
+          await DbService.insertBanner({
+            'title': 'Banner', // Not used in UI but required by DB
+            'subtitle': '', 
+            'color': 'primary', 
+            'icon_name': 'image',
+            'image_url': imageUrl,
+            'is_active': true,
+          });
+        } catch (e) {
+          debugPrint('Upload error: $e');
+        } finally {
+          _loadData();
+        }
+      }
+    }
+  }
+
+  Future<void> _hapusBanner(Map<String, dynamic> item) async {
+    final ok = await AppDialog.confirm(
+      context: context,
+      title: 'Hapus Banner',
+      message: 'Hapus banner ini?',
+      confirmLabel: 'Hapus',
+      confirmColor: AppColors.danger,
+    );
+    if (ok == true) {
+      await DbService.deleteBanner((item['id'] as num).toInt());
+      _loadData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Banners & Promosi'),
+        backgroundColor: AppColors.primary,
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'banner_fab',
+        backgroundColor: AppColors.primary,
+        elevation: 2,
+        onPressed: _uploadBanner,
+        child: const Icon(Icons.add_photo_alternate),
+      ),
+      body: AppListView(
+        loading: _loading,
+        isEmpty: _banners.isEmpty,
+        emptyIcon: Icons.campaign,
+        emptyTitle: 'Belum ada banner',
+        emptySubtitle: 'Tekan tombol + untuk upload gambar banner',
+        onRefresh: _loadData,
+        children: _banners.map((item) {
+          final imageUrl = item['image_url'] as String?;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: AspectRatio(
+                    aspectRatio: 2 / 1,
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? Image.network(imageUrl, fit: BoxFit.cover)
+                        : Container(color: AppColors.primary),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _hapusBanner(item),
+                    style: IconButton.styleFrom(backgroundColor: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _VoucherPage extends StatefulWidget {
+  const _VoucherPage();
+
+  @override
+  State<_VoucherPage> createState() => _VoucherPageState();
+}
+
+class _VoucherPageState extends State<_VoucherPage> {
+  List<Map<String, dynamic>> _vouchers = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final data = await DbService.getVouchers();
+    if (mounted) setState(() { _vouchers = data; _loading = false; });
+  }
+
+  void _formVoucher({Map<String, dynamic>? item}) {
+    final isNew = item == null;
+    final kodeCtrl = TextEditingController(text: item?['kode'] ?? '');
+    final potonganCtrl = TextEditingController(text: item?['potongan']?.toString() ?? '');
+    final kuotaCtrl = TextEditingController(text: item?['kuota']?.toString() ?? '');
+    bool isActive = item?['is_active'] ?? true;
+
+    AppDialog.show(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AppDialog.themed(
+          context: ctx,
+          title: isNew ? 'Tambah Voucher' : 'Ubah Voucher',
+          content: [
+            AppInput(controller: kodeCtrl, label: 'Kode Voucher (Misal: HEMAT10K)'),
+            const SizedBox(height: 12),
+            AppInput(controller: potonganCtrl, label: 'Potongan Harga (Rp)', keyboardType: TextInputType.number),
+            const SizedBox(height: 12),
+            AppInput(controller: kuotaCtrl, label: 'Kuota Penggunaan', keyboardType: TextInputType.number),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('Status Aktif'),
+                const Spacer(),
+                Switch(
+                  value: isActive,
+                  onChanged: (v) => setState(() => isActive = v),
+                  activeColor: AppColors.primary,
+                ),
+              ],
+            ),
+          ],
+          actions: [
+            AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+            AppButton(
+              label: 'Simpan',
+              variant: AppButtonVariant.primary,
+              onPressed: () async {
+                final kode = kodeCtrl.text.trim().toUpperCase();
+                final potongan = int.tryParse(potonganCtrl.text) ?? 0;
+                final kuota = int.tryParse(kuotaCtrl.text) ?? 0;
+
+                if (kode.isEmpty || potongan <= 0 || kuota < 0) {
+                  return; // validasi gagal
+                }
+
+                final data = {
+                  'kode': kode,
+                  'potongan': potongan,
+                  'kuota': kuota,
+                  'is_active': isActive,
+                };
+
+                if (isNew) {
+                  await DbService.insertVoucher(data);
+                } else {
+                  await DbService.updateVoucher((item['id'] as num).toInt(), data);
+                }
+                if (mounted) Navigator.pop(ctx);
+                _loadData();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _hapusVoucher(Map<String, dynamic> item) async {
+    final ok = await AppDialog.confirm(
+      context: context,
+      title: 'Hapus Voucher',
+      message: 'Hapus voucher "${item['kode']}"?',
+      confirmLabel: 'Hapus',
+      confirmColor: AppColors.danger,
+    );
+    if (ok == true) {
+      await DbService.deleteVoucher((item['id'] as num).toInt());
+      _loadData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Voucher & Diskon'),
+        backgroundColor: AppColors.primary,
+      ),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'voucher_fab',
+        backgroundColor: AppColors.primary,
+        elevation: 2,
+        onPressed: () => _formVoucher(),
+        child: const Icon(Icons.add),
+      ),
+      body: AppListView(
+        loading: _loading,
+        isEmpty: _vouchers.isEmpty,
+        emptyIcon: Icons.discount_outlined,
+        emptyTitle: 'Belum ada voucher',
+        emptySubtitle: 'Tekan tombol + untuk membuat voucher promo',
+        onRefresh: _loadData,
+        children: _vouchers.map((item) => AppListTile(
+          leadingIcon: Icons.local_activity_outlined,
+          title: item['kode'],
+          subtitle: 'Kuota: ${item['kuota']} • ${item['is_active'] ? "Aktif" : "Non-aktif"}',
+          trailing: Text('-${formatRupiah(item['potongan'])}', style: AppTextStyles.bodyBold.copyWith(color: AppColors.success)),
+          onTap: () => AppBottomSheet.show(
+            context: context,
+            title: item['kode'],
+            subtitle: 'Potongan: ${formatRupiah(item['potongan'])}',
+            actions: [
+              SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _formVoucher(item: item)),
+              SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusVoucher(item)),
             ],
           ),
         )).toList(),

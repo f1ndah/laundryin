@@ -33,6 +33,7 @@ create table if not exists transactions (
   status text default 'Menunggu' check (status in ('Menunggu', 'Proses', 'Selesai', 'Batal')),
   metode text default 'QRIS' check (metode in ('QRIS', 'Saldo')),
   bukti_url text,
+  toko_id integer references toko(id),
   tanggal timestamp with time zone default timezone('utc'::text, now()) not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
@@ -41,6 +42,7 @@ create table if not exists transactions (
 -- alter table transactions add column if not exists kode text unique;
 -- alter table transactions drop constraint if exists transactions_metode_check;
 -- alter table transactions add constraint transactions_metode_check check (metode in ('QRIS', 'Saldo'));
+-- alter table transactions add column if not exists toko_id integer references toko(id);
 -- ============================================
 -- 2. ADDITIONAL TABLES (Layanan, Toko)
 -- ============================================
@@ -68,6 +70,28 @@ create table if not exists toko (
 -- alter table toko alter column id drop default;
 -- alter table toko alter column id add generated always as identity;
 -- alter table toko add column if not exists nomor_admin text;
+
+-- Banners table (managed by admin)
+create table if not exists banners (
+  id serial primary key,
+  title text not null,
+  subtitle text not null,
+  color text not null,
+  icon_name text not null,
+  image_url text,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Vouchers table (managed by admin)
+create table if not exists vouchers (
+  id serial primary key,
+  kode text unique not null,
+  potongan integer not null check (potongan > 0),
+  kuota integer not null default 0 check (kuota >= 0),
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
 -- ============================================
 -- 3. INDEXES
@@ -106,6 +130,20 @@ create policy "Anyone can read toko" on toko for select using (auth.role() = 'au
 create policy "Admins can insert toko" on toko for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
 create policy "Admins can update toko" on toko for update using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
 create policy "Admins can delete toko" on toko for delete using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+
+-- Banners: admin-only write, all authenticated can read
+alter table banners enable row level security;
+create policy "Anyone can read banners" on banners for select using (auth.role() = 'authenticated');
+create policy "Admins can insert banners" on banners for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+create policy "Admins can update banners" on banners for update using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+create policy "Admins can delete banners" on banners for delete using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+
+-- Vouchers: admin-only write, all authenticated can read
+alter table vouchers enable row level security;
+create policy "Anyone can read vouchers" on vouchers for select using (auth.role() = 'authenticated');
+create policy "Admins can insert vouchers" on vouchers for insert with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+create policy "Admins can update vouchers" on vouchers for update using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+create policy "Admins can delete vouchers" on vouchers for delete using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
 
 -- Untuk tabel sudah ada, jalankan:
 --   alter table transactions enable row level security;

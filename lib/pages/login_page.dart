@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../theme.dart';
 import '../services/auth_service.dart';
 import '../widgets/app_button.dart';
+import '../services/db_service.dart';
+import '../widgets/app_snackbar.dart';
 import '../widgets/app_input.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,13 +31,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _snack(String msg, {bool ok = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: ok ? Colors.green : Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (!ok && msg.contains('sedang dikembangkan')) {
+      AppSnackbar.info(context, msg);
+    } else {
+      AppSnackbar.show(context, message: msg, isError: !ok);
+    }
   }
 
   Future<void> _submit() async {
@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          _snack('Fitur lupa password sedang dikembangkan 🛠️');
+                          _snack('Fitur lupa password sedang dikembangkan.');
                         },
                         child: const Text('Lupa Password?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                       ),

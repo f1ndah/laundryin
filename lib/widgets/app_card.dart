@@ -151,13 +151,6 @@ class AppTransactionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: color ?? AppColors.surface,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.text.withOpacity(0.05),
-              offset: const Offset(0, 2),
-              blurRadius: 8,
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -68,7 +68,7 @@ class AppAbout {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Hamba Allah',
+                        'Kelompok 5',
                         style: AppTextStyles.bodyBold,
                         textAlign: TextAlign.center,
                       ),

@@ -36,7 +36,7 @@ class AppButton extends StatelessWidget {
     return GestureDetector(
       onTap: isLoading ? null : onPressed,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
           color: isFilled ? fillColor : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
