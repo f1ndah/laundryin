@@ -5,6 +5,7 @@ Aplikasi laundry (Flutter + Supabase) — pelanggan order & bayar, admin kelola 
 ## Fitur
 
 **Pelanggan**
+
 - Login / daftar
 - Buat transaksi, bayar QRIS atau saldo
 - Tiket klaim (kode acak 5 karakter)
@@ -13,6 +14,7 @@ Aplikasi laundry (Flutter + Supabase) — pelanggan order & bayar, admin kelola 
 - Profil + statistik
 
 **Admin**
+
 - Dashboard transaksi (status Menunggu → Proses → Selesai; Batal/Selesai terkunci)
 - CRUD layanan (harga /kg)
 - Info toko
@@ -74,6 +76,18 @@ supabase/
   schema.sql      # skema database
 assets/images/    # logo, QRIS, dll
 ```
+
+## Changelog
+
+### [1.0.0] — Initial release
+
+- Auth login / daftar (pelanggan & admin)
+- Transaksi pelanggan: order, bayar QRIS / saldo, tiket klaim 5 karakter
+- Batalkan transaksi → refund ke saldo (tidak bisa ditarik tunai)
+- Dashboard admin: status Menunggu → Proses → Selesai (Batal/Selesai terkunci)
+- CRUD layanan (harga /kg), info toko, daftar pelanggan
+- Profil, pricelist, lokasi toko
+- Dialog tentang aplikasi + cek versi vs GitHub release/tag
 
 ## Catatan
 
