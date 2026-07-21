@@ -111,12 +111,21 @@ class DbService {
 
   // ========== TOKO ==========
 
-  static Future<Map<String, dynamic>?> getToko() async {
-    return await _supabase.from('toko').select().eq('id', 1).maybeSingle();
+  static Future<List<Map<String, dynamic>>> getTokoList() async {
+    return await _supabase.from('toko').select().order('id');
   }
 
-  static Future<void> updateToko(Map<String, dynamic> data) async {
-    await _supabase.from('toko').upsert({...data, 'id': 1});
+  static Future<Map<String, dynamic>> insertToko(Map<String, dynamic> data) async {
+    final rows = await _supabase.from('toko').insert(data).select();
+    return rows.first;
+  }
+
+  static Future<void> updateToko(int id, Map<String, dynamic> data) async {
+    await _supabase.from('toko').update(data).eq('id', id);
+  }
+
+  static Future<void> deleteToko(int id) async {
+    await _supabase.from('toko').delete().eq('id', id);
   }
 
   // ========== PELANGGAN ==========

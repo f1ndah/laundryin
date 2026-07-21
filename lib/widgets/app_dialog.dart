@@ -28,8 +28,8 @@ class AppDialog {
         title: Text(title, style: AppTextStyles.subheading),
         content: Text(message, style: AppTextStyles.body),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(cancelLabel, style: AppTextStyles.bodyBold.copyWith(color: AppColors.textLight))),
-          AppButton(label: confirmLabel, backgroundColor: confirmColor, onPressed: () => Navigator.pop(context, true)),
+          AppButton(label: cancelLabel, variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(context, false)),
+          AppButton(label: confirmLabel, backgroundColor: confirmColor, variant: AppButtonVariant.primary, onPressed: () => Navigator.pop(context, true)),
         ],
       ),
     );
@@ -48,7 +48,7 @@ class AppDialog {
         title: Text(title, style: AppTextStyles.subheading),
         content: content ?? (message != null ? Text(message, style: AppTextStyles.body) : null),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+          AppButton(label: 'OK', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(context)),
         ],
       ),
     );

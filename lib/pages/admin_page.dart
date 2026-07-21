@@ -12,8 +12,6 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_empty_state.dart';
 import '../widgets/app_input.dart';
-import 'home_page.dart';
-
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
   @override
@@ -30,9 +28,8 @@ class _AdminPageState extends State<AdminPage> {
         index: _currentIndex,
         children: const [
           _TransaksiTab(),
-          _LayananTab(),
-          _TokoTab(),
           _PelangganTab(),
+          _ProfilTab(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -43,9 +40,8 @@ class _AdminPageState extends State<AdminPage> {
         unselectedItemColor: AppColors.textLight,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transaksi'),
-          BottomNavigationBarItem(icon: Icon(Icons.local_laundry_service), label: 'Layanan'),
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Toko'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Pelanggan'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );
@@ -110,8 +106,6 @@ class _TransaksiTabState extends State<_TransaksiTab> {
         backgroundColor: AppColors.primary,
         actions: [
           AppAbout.action(context),
-          IconButton(icon: const Icon(Icons.visibility), tooltip: 'Lihat sebagai Pelanggan', onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()))),
-          IconButton(icon: const Icon(Icons.logout), onPressed: () => AuthService.logout()),
         ],
       ),
       body: _loading
@@ -206,14 +200,161 @@ class _TransaksiTabState extends State<_TransaksiTab> {
   }
 }
 
-class _LayananTab extends StatefulWidget {
-  const _LayananTab();
+class _PelangganTab extends StatefulWidget {
+  const _PelangganTab();
 
   @override
-  State<_LayananTab> createState() => _LayananTabState();
+  State<_PelangganTab> createState() => _PelangganTabState();
 }
 
-class _LayananTabState extends State<_LayananTab> {
+class _PelangganTabState extends State<_PelangganTab> {
+  List<Map<String, dynamic>> _pelanggan = [];
+  bool _loading = true;
+
+  @override
+  void initState() { super.initState(); _loadData(); }
+
+  Future<void> _loadData() async {
+    final data = await DbService.getPelanggan();
+    if (mounted) setState(() { _pelanggan = data; _loading = false; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Pelanggan'),
+        backgroundColor: AppColors.primary,
+        actions: [
+          AppAbout.action(context),
+        ],
+      ),
+      body: AppListView(
+        loading: _loading,
+        isEmpty: _pelanggan.isEmpty,
+        emptyIcon: Icons.people_outline,
+        emptyTitle: 'Belum ada pelanggan',
+        onRefresh: _loadData,
+        children: _pelanggan.map((p) => GestureDetector(
+          onTap: () => AppBottomSheet.show(
+            context: context,
+            title: p['nama'] ?? '-',
+            subtitle: p['email'] ?? '-',
+            actions: [
+              SheetAction(icon: Icons.calendar_today, label: 'Terdaftar: ${DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at']))}'),
+            ],
+          ),
+          child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12)),
+          child: Row(children: [
+            CircleAvatar(child: Text((p['nama'] ?? 'A')[0])),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(p['nama'] ?? '-', style: AppTextStyles.bodyBold),
+              Text(p['email'] ?? '-', style: AppTextStyles.caption),
+            ])),
+            Text(DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at'])), style: AppTextStyles.caption),
+          ]),
+        ))).toList(),
+      ),
+    );
+  }
+}
+
+class _ProfilTab extends StatefulWidget {
+  const _ProfilTab();
+
+  @override
+  State<_ProfilTab> createState() => _ProfilTabState();
+}
+
+class _ProfilTabState extends State<_ProfilTab> {
+  Map<String, dynamic>? _profile;
+  bool _loading = true;
+
+  @override
+  void initState() { super.initState(); _loadData(); }
+
+  Future<void> _loadData() async {
+    final profile = await AuthService.getProfile();
+    if (mounted) setState(() { _profile = profile; _loading = false; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final email = AuthService.currentUser?.email ?? '-';
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profil Admin'),
+        backgroundColor: AppColors.primary,
+        actions: [
+          AppAbout.action(context),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  const Center(
+                    child: CircleAvatar(
+                      radius: 50,
+                      child: Icon(Icons.admin_panel_settings, size: 60),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      _profile?['nama'] ?? '-',
+                      style: AppTextStyles.heading,
+                    ),
+                  ),
+                  Center(
+                    child: Text(email, style: AppTextStyles.caption),
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Chip(
+                      label: const Text('Admin'),
+                      backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                      labelStyle: const TextStyle(color: AppColors.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  AppListTile(
+                    leadingIcon: Icons.local_laundry_service,
+                    title: 'Layanan & Harga',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _LayananPage())),
+                  ),
+                  AppListTile(
+                    leadingIcon: Icons.store,
+                    title: 'Toko',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _TokoPage())),
+                  ),
+                  AppListTile(
+                    leadingIcon: Icons.logout,
+                    title: 'Logout',
+                    onTap: () => AuthService.logout(),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}
+
+class _LayananPage extends StatefulWidget {
+  const _LayananPage();
+
+  @override
+  State<_LayananPage> createState() => _LayananPageState();
+}
+
+class _LayananPageState extends State<_LayananPage> {
   List<Map<String, dynamic>> _layanan = [];
   bool _loading = true;
 
@@ -239,9 +380,10 @@ class _LayananTabState extends State<_LayananTab> {
           AppInput(controller: hargaCtrl, label: 'Harga /kg', keyboardType: TextInputType.number),
         ],
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
           AppButton(
             label: 'Simpan',
+            variant: AppButtonVariant.primary,
             onPressed: () async {
               final jenis = jenisCtrl.text.trim();
               final harga = int.tryParse(hargaCtrl.text);
@@ -271,9 +413,10 @@ class _LayananTabState extends State<_LayananTab> {
           AppInput(controller: hargaCtrl, label: 'Harga /kg', keyboardType: TextInputType.number),
         ],
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
           AppButton(
             label: 'Simpan',
+            variant: AppButtonVariant.primary,
             onPressed: () async {
               final jenis = jenisCtrl.text.trim();
               final harga = int.tryParse(hargaCtrl.text);
@@ -309,11 +452,6 @@ class _LayananTabState extends State<_LayananTab> {
       appBar: AppBar(
         title: const Text('Layanan & Harga'),
         backgroundColor: AppColors.primary,
-        actions: [
-          AppAbout.action(context),
-          IconButton(icon: const Icon(Icons.visibility), tooltip: 'Lihat sebagai Pelanggan', onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()))),
-          IconButton(icon: const Icon(Icons.logout), onPressed: () => AuthService.logout()),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'layanan_fab',
@@ -348,180 +486,139 @@ class _LayananTabState extends State<_LayananTab> {
   }
 }
 
-class _TokoTab extends StatefulWidget {
-  const _TokoTab();
+class _TokoPage extends StatefulWidget {
+  const _TokoPage();
 
   @override
-  State<_TokoTab> createState() => _TokoTabState();
+  State<_TokoPage> createState() => _TokoPageState();
 }
 
-class _TokoTabState extends State<_TokoTab> {
-  Map<String, dynamic>? _toko;
+class _TokoPageState extends State<_TokoPage> {
+  List<Map<String, dynamic>> _tokoList = [];
   bool _loading = true;
 
   @override
   void initState() { super.initState(); _loadData(); }
 
   Future<void> _loadData() async {
-    final data = await DbService.getToko();
-    if (mounted) setState(() { _toko = data; _loading = false; });
+    final data = await DbService.getTokoList();
+    if (mounted) setState(() { _tokoList = data; _loading = false; });
   }
 
-  void _editToko() {
-    final isNew = _toko == null;
-    final namaCtrl = TextEditingController(text: _toko?['nama'] ?? '');
-    final alamatCtrl = TextEditingController(text: _toko?['alamat'] ?? '');
-    final jamBukaCtrl = TextEditingController(text: _toko?['jam_buka'] ?? '08:00');
-    final jamTutupCtrl = TextEditingController(text: _toko?['jam_tutup'] ?? '20:00');
+  void _tambahToko() => _formToko();
 
-    showDialog(
+  void _ubahToko(Map<String, dynamic> item) => _formToko(item: item);
+
+  void _formToko({Map<String, dynamic>? item}) {
+    final isNew = item == null;
+    final namaCtrl = TextEditingController(text: item?['nama'] ?? '');
+    final alamatCtrl = TextEditingController(text: item?['alamat'] ?? '');
+    final jamBukaCtrl = TextEditingController(text: item?['jam_buka'] ?? '08:00');
+    final jamTutupCtrl = TextEditingController(text: item?['jam_tutup'] ?? '20:00');
+    final noWACtrl = TextEditingController(text: item?['nomor_admin'] ?? '');
+
+    AppDialog.show(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(isNew ? 'Tambah Toko' : 'Edit Toko'),
-        content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            AppInput(controller: namaCtrl, label: 'Nama Toko'),
-            const SizedBox(height: 12),
-            AppInput(controller: alamatCtrl, label: 'Alamat', maxLines: 2),
-            const SizedBox(height: 12),
-            Row(children: [
-              Expanded(child: AppInput(controller: jamBukaCtrl, label: 'Jam Buka')),
-              const SizedBox(width: 12),
-              Expanded(child: AppInput(controller: jamTutupCtrl, label: 'Jam Tutup')),
-            ]),
+      builder: (ctx) => AppDialog.themed(
+        context: ctx,
+        title: isNew ? 'Tambah Cabang Toko' : 'Edit Cabang Toko',
+        content: [
+          AppInput(controller: namaCtrl, label: 'Nama Cabang'),
+          const SizedBox(height: 12),
+          AppInput(controller: alamatCtrl, label: 'Alamat', maxLines: 2),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: AppInput(controller: jamBukaCtrl, label: 'Jam Buka')),
+            const SizedBox(width: 12),
+            Expanded(child: AppInput(controller: jamTutupCtrl, label: 'Jam Tutup')),
           ]),
-        ),
+          const SizedBox(height: 12),
+          AppInput(controller: noWACtrl, label: 'No WA Admin (628xxx / 08xxx)', keyboardType: TextInputType.phone),
+        ],
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          FilledButton(onPressed: () async {
-            await DbService.updateToko({
-              'nama': namaCtrl.text.trim(),
-              'alamat': alamatCtrl.text.trim(),
-              'jam_buka': jamBukaCtrl.text.trim(),
-              'jam_tutup': jamTutupCtrl.text.trim(),
-            });
-            Navigator.pop(ctx);
-            _loadData();
-          }, child: const Text('Simpan')),
+          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+          AppButton(
+            label: 'Simpan',
+            variant: AppButtonVariant.primary,
+            onPressed: () async {
+              var waNumber = noWACtrl.text.trim();
+              if (waNumber.startsWith('0')) {
+                waNumber = '62${waNumber.substring(1)}';
+              } else if (waNumber.startsWith('+62')) {
+                waNumber = waNumber.substring(1);
+              }
+
+              final data = {
+                'nama': namaCtrl.text.trim(),
+                'alamat': alamatCtrl.text.trim(),
+                'jam_buka': jamBukaCtrl.text.trim(),
+                'jam_tutup': jamTutupCtrl.text.trim(),
+                'nomor_admin': waNumber,
+              };
+              if (isNew) {
+                await DbService.insertToko(data);
+              } else {
+                await DbService.updateToko((item['id'] as num).toInt(), data);
+              }
+              Navigator.pop(ctx);
+              _loadData();
+            },
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _hapusToko(Map<String, dynamic> item) async {
+    final ok = await AppDialog.confirm(
+      context: context,
+      title: 'Hapus Cabang Toko',
+      message: 'Hapus "${item['nama']}"?',
+      confirmLabel: 'Hapus',
+      confirmColor: AppColors.danger,
+    );
+    if (ok == true) {
+      await DbService.deleteToko((item['id'] as num).toInt());
+      _loadData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Toko'),
+        title: const Text('Cabang Toko'),
         backgroundColor: AppColors.primary,
-        actions: [
-          AppAbout.action(context),
-          IconButton(icon: const Icon(Icons.visibility), tooltip: 'Lihat sebagai Pelanggan', onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()))),
-          IconButton(icon: const Icon(Icons.logout), onPressed: () => AuthService.logout()),
-        ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _toko == null
-              ? RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView(children: const [
-                    AppEmptyState(icon: Icons.store, title: 'Belum ada data toko'),
-                  ]),
-                )
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView(padding: const EdgeInsets.all(16), children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
-                      child: Column(children: [
-                        const Icon(Icons.store, size: 64, color: AppColors.primary),
-                        const SizedBox(height: 16),
-                        Text(_toko!['nama'] ?? '-', style: AppTextStyles.heading),
-                        const SizedBox(height: 8),
-                        Text(_toko!['alamat'] ?? '-', style: AppTextStyles.body, textAlign: TextAlign.center),
-                        const SizedBox(height: 8),
-                        Text('${_toko!['jam_buka'] ?? '-'} - ${_toko!['jam_tutup'] ?? '-'}', style: AppTextStyles.caption),
-                        const SizedBox(height: 16),
-                        AppButton(label: 'Edit', icon: Icons.edit, onPressed: _editToko),
-                      ]),
-                    ),
-                  ]),
-                ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'toko_fab',
         backgroundColor: AppColors.primary,
         elevation: 2,
-        onPressed: _editToko,
+        onPressed: _tambahToko,
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class _PelangganTab extends StatefulWidget {
-  const _PelangganTab();
-
-  @override
-  State<_PelangganTab> createState() => _PelangganTabState();
-}
-
-class _PelangganTabState extends State<_PelangganTab> {
-  List<Map<String, dynamic>> _pelanggan = [];
-  bool _loading = true;
-
-  @override
-  void initState() { super.initState(); _loadData(); }
-
-  Future<void> _loadData() async {
-    final data = await DbService.getPelanggan();
-    if (mounted) setState(() { _pelanggan = data; _loading = false; });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pelanggan'),
-        backgroundColor: AppColors.primary,
-        actions: [
-          AppAbout.action(context),
-          IconButton(icon: const Icon(Icons.visibility), tooltip: 'Lihat sebagai Pelanggan', onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomePage()))),
-          IconButton(icon: const Icon(Icons.logout), onPressed: () => AuthService.logout()),
-        ],
       ),
       body: AppListView(
         loading: _loading,
-        isEmpty: _pelanggan.isEmpty,
-        emptyIcon: Icons.people_outline,
-        emptyTitle: 'Belum ada pelanggan',
+        isEmpty: _tokoList.isEmpty,
+        emptyIcon: Icons.store,
+        emptyTitle: 'Belum ada cabang toko',
+        emptySubtitle: 'Tekan tombol + untuk tambah cabang',
         onRefresh: _loadData,
-        children: _pelanggan.map((p) => InkWell(
-          borderRadius: BorderRadius.circular(12),
+        children: _tokoList.map((item) => AppListTile(
+          leadingIcon: Icons.store,
+          title: item['nama'],
+          subtitle: item['alamat'] + (item['nomor_admin'] != null && item['nomor_admin'].toString().isNotEmpty ? '\nWA: ${item['nomor_admin']}' : ''),
+          trailing: Text('${item['jam_buka']} — ${item['jam_tutup']}', style: AppTextStyles.caption),
           onTap: () => AppBottomSheet.show(
             context: context,
-            title: p['nama'] ?? '-',
-            subtitle: p['email'] ?? '-',
+            title: item['nama'],
+          subtitle: item['alamat'],
             actions: [
-              SheetAction(icon: Icons.calendar_today, label: 'Terdaftar: ${DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at']))}'),
+              SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _ubahToko(item)),
+              SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusToko(item)),
             ],
           ),
-          child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12)),
-          child: Row(children: [
-            CircleAvatar(child: Text((p['nama'] ?? 'A')[0])),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(p['nama'] ?? '-', style: AppTextStyles.bodyBold),
-              Text(p['email'] ?? '-', style: AppTextStyles.caption),
-            ])),
-            Text(DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at'])), style: AppTextStyles.caption),
-          ]),
-        ))).toList(),
+        )).toList(),
       ),
     );
   }

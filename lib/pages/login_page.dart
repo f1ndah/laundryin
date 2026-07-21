@@ -11,25 +11,17 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
-  late final TabController _tab;
-  final _loginKey = GlobalKey<FormState>();
-  final _regKey = GlobalKey<FormState>();
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   final _nama = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _loading = false;
   bool _obscure = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _tab = TabController(length: 2, vsync: this);
-  }
+  bool _isLogin = true;
 
   @override
   void dispose() {
-    _tab.dispose();
     _nama.dispose();
     _email.dispose();
     _password.dispose();
@@ -38,162 +30,177 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
 
   void _snack(String msg, {bool ok = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: ok ? Colors.green : Colors.red),
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: ok ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
-  Future<void> _login() async {
-    if (!_loginKey.currentState!.validate()) return;
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
+    
     try {
-      await AuthService.login(_email.text.trim(), _password.text);
-    } on AuthException catch (e) {
-      if (mounted) _snack(e.message);
-    } catch (e) {
-      if (mounted) _snack('Login gagal: $e');
-    }
-    if (mounted) setState(() => _loading = false);
-  }
-
-  Future<void> _register() async {
-    if (!_regKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    try {
-      await AuthService.register(
-        email: _email.text.trim(),
-        password: _password.text,
-        nama: _nama.text.trim(),
-        role: 'pelanggan',
-      );
-      if (mounted) {
-        _snack('Daftar berhasil! Silahkan login', ok: true);
-        _tab.animateTo(0);
+      if (_isLogin) {
+        await AuthService.login(_email.text.trim(), _password.text);
+      } else {
+        await AuthService.register(
+          email: _email.text.trim(),
+          password: _password.text,
+          nama: _nama.text.trim(),
+          role: 'pelanggan',
+        );
+        if (mounted) {
+          _snack('Pendaftaran berhasil! Silakan masuk.', ok: true);
+          setState(() {
+            _isLogin = true;
+            _password.clear();
+          });
+        }
       }
     } on AuthException catch (e) {
       if (mounted) _snack(e.message);
     } catch (e) {
-      if (mounted) _snack('Registrasi gagal: $e');
+      if (mounted) _snack('${_isLogin ? 'Login' : 'Registrasi'} gagal: $e');
     }
+    
     if (mounted) setState(() => _loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Card(
-            elevation: 10,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+            child: Form(
+              key: _formKey,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset(
-                    'assets/images/logo.png',
-                    height: 70,
-                    errorBuilder: (_, __, ___) => const Icon(
-                      Icons.local_laundry_service,
-                      size: 70,
-                      color: AppColors.accent,
+                  // Logo & Header
+                  Center(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 100,
+                      errorBuilder: (_, __, ___) => Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.local_laundry_service,
+                          size: 64,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Text('LaundryIN', style: AppTextStyles.heading),
-                  Text('Cuci baju tanpa ribet', style: AppTextStyles.caption),
-                  const SizedBox(height: 16),
-                  TabBar(
-                    controller: _tab,
-                    labelColor: AppColors.primary,
-                    unselectedLabelColor: Colors.grey,
-                    indicatorColor: AppColors.primary,
-                    tabs: const [Tab(text: 'Login'), Tab(text: 'Daftar')],
+                  const SizedBox(height: 32),
+                  Text(
+                    _isLogin ? 'Selamat Datang!' : 'Buat Akun Baru',
+                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.text),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _isLogin ? 'Masuk untuk melanjutkan ke LaundryIN' : 'Daftar sekarang untuk mulai memesan',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Fields
+                  if (!_isLogin) ...[
+                    AppInput(
+                      controller: _nama,
+                      label: 'Nama Lengkap',
+                      prefixIcon: Icons.person_outline,
+                      validator: (v) => v!.trim().isEmpty ? 'Nama wajib diisi' : null,
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                  AppInput(
+                    controller: _email,
+                    label: 'Email',
+                    prefixIcon: Icons.email_outlined,
+                    validator: (v) => v!.isEmpty ? 'Email wajib diisi' : null,
                   ),
                   const SizedBox(height: 20),
-                  SizedBox(
-                    height: 320,
-                    child: TabBarView(
-                      controller: _tab,
-                      children: [
-                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _loginForm()),
-                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _registerForm()),
-                      ],
+                  AppInput(
+                    controller: _password,
+                    label: 'Password',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: _obscure,
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
+                      onPressed: () => setState(() => _obscure = !_obscure),
                     ),
+                    validator: (v) => v!.length < 6 ? 'Password minimal 6 karakter' : null,
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // Lupa Password (mock)
+                  if (_isLogin)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          _snack('Fitur lupa password sedang dikembangkan 🛠️');
+                        },
+                        child: const Text('Lupa Password?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                      ),
+                    )
+                  else
+                    const SizedBox(height: 24),
+                  
+                  if (_isLogin) const SizedBox(height: 16),
+
+                  // Submit Button
+                  AppButton(
+                    label: _isLogin ? 'MASUK' : 'DAFTAR SEKARANG',
+                    variant: AppButtonVariant.primary,
+                    onPressed: _submit,
+                    isLoading: _loading,
+                    icon: Icons.arrow_forward,
+                    iconRight: true,
+                    expandContent: true,
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isLogin ? 'Belum punya akun?' : 'Sudah punya akun?',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _isLogin = !_isLogin;
+                            _formKey.currentState?.reset();
+                          });
+                        },
+                        child: Text(
+                          _isLogin ? 'Daftar di sini' : 'Masuk di sini',
+                          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _loginForm() {
-    return Form(
-      key: _loginKey,
-      child: Column(
-        children: [
-          AppInput(
-            controller: _email,
-            label: 'Email',
-            prefixIcon: Icons.email_outlined,
-            validator: (v) => v!.isEmpty ? 'Wajib' : null,
-          ),
-          const SizedBox(height: 16),
-          AppInput(
-            controller: _password,
-            label: 'Password',
-            prefixIcon: Icons.lock_outline,
-            obscureText: _obscure,
-            suffixIcon: IconButton(
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-              onPressed: () => setState(() => _obscure = !_obscure),
-            ),
-            validator: (v) => v!.length < 6 ? 'Min 6' : null,
-          ),
-          const SizedBox(height: 24),
-          AppButton(label: 'LOGIN', onPressed: _login, isLoading: _loading),
-        ],
-      ),
-    );
-  }
-
-  Widget _registerForm() {
-    return Form(
-      key: _regKey,
-      child: Column(
-        children: [
-          AppInput(
-            controller: _nama,
-            label: 'Nama Lengkap',
-            prefixIcon: Icons.person_outline,
-            validator: (v) => v!.trim().isEmpty ? 'Wajib' : null,
-          ),
-          const SizedBox(height: 16),
-          AppInput(
-            controller: _email,
-            label: 'Email',
-            prefixIcon: Icons.email_outlined,
-            validator: (v) => v!.isEmpty ? 'Wajib' : null,
-          ),
-          const SizedBox(height: 16),
-          AppInput(
-            controller: _password,
-            label: 'Password',
-            prefixIcon: Icons.lock_outline,
-            obscureText: _obscure,
-            suffixIcon: IconButton(
-              icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-              onPressed: () => setState(() => _obscure = !_obscure),
-            ),
-            validator: (v) => v!.length < 6 ? 'Min 6' : null,
-          ),
-          const SizedBox(height: 24),
-          AppButton(label: 'DAFTAR', onPressed: _register, isLoading: _loading),
-        ],
       ),
     );
   }

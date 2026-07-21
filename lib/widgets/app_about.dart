@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/app_version_service.dart';
 import '../theme.dart';
+import 'app_button.dart';
 import 'app_dialog.dart';
 
 class AppAbout {
@@ -83,9 +84,7 @@ class AppAbout {
               ],
             ],
             actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Tutup')),
+              AppButton(label: 'Tutup', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
             ],
           );
         },

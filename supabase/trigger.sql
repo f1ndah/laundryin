@@ -1,0 +1,35 @@
+-- ============================================
+-- WhatsApp Notification Setup
+-- ============================================
+--
+-- CARA 1: Database Webhook (Supabase Dashboard)
+--   Dashboard > Database > Webhooks (jika tersedia)
+--   Table: transactions, Event: INSERT
+--   POST ke: https://cpydacbfkskllbozyxym.supabase.co/functions/v1/smooth-handler
+--   Header: Authorization: Bearer <anon_key>
+--
+-- CARA 2: Edge Function Cron (jika Webhook gak tersedia)
+--   Deploy function terpisah yang polling transactions tiap 1 menit
+--
+-- CARA 3: pg_net trigger (jika pg_net extension sudah terinstall sempurna)
+--   Jalankan SQL di bawah satu per satu:
+--
+--   create extension if not exists pg_net schema extensions;
+--
+--   create or replace function notify_wa_transaksi()
+--   returns trigger as $$
+--   begin
+--     perform net.http_post(
+--       url := 'https://cpydacbfkskllbozyxym.supabase.co/functions/v1/smooth-handler',
+--       headers := jsonb_build_object(
+--         'Content-Type', 'application/json',
+--         'Authorization', 'Bearer <anon_key>'
+--       ),
+--       body := jsonb_build_object(...)::text
+--     );
+--     return NEW;
+--   end;
+--   $$ language plpgsql security definer;
+--
+--   create trigger trx_notify_wa after insert on public.transactions
+--     for each row execute function notify_wa_transaksi();

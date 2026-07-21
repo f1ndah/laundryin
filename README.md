@@ -37,9 +37,15 @@ flutter pub get
 
 ### 2. Supabase config
 
-```bash
-cp lib/services/supabase_config.example.dart lib/services/supabase_config.dart
-```
+lib/services/supabase_config.dart
+
+// Copy this file to supabase_config.dart and fill in your values.
+// supabase_config.dart is gitignored — do not commit secrets.
+
+class SupabaseConfig {
+static const String url = 'YOUR_SUPABASE_URL';
+static const String anonKey = 'YOUR_SUPABASE_ANON_KEY';
+}
 
 Isi URL & anon key dari Supabase Dashboard → Project Settings → API.
 
@@ -59,7 +65,23 @@ update profiles set role = 'admin' where email = 'email@kamu.com';
 
 Disarankan: matikan email confirmation di Authentication → Providers → Email (untuk dev).
 
-### 4. Run
+### 4. Setup Notifikasi WhatsApp (Opsional)
+
+Aplikasi ini menggunakan Supabase Edge Functions untuk mengirim notifikasi WhatsApp otomatis ke admin saat ada transaksi baru via Gowa API.
+
+1. Atur *secrets* (environment variables) di Supabase Anda:
+```bash
+supabase secrets set GOWA_BASE_URL="https://api-gowa-anda.com"
+supabase secrets set GOWA_TOKEN="username:password"
+supabase secrets set GOWA_DEVICE_ID="device-id-anda"
+```
+
+2. *Deploy* Edge Function `wa` (jika nama folder di project Anda `notify-wa`, rename terlebih dahulu menjadi `wa` saat *deploy* atau sesuaikan `invoke('wa')` di kode Flutter):
+```bash
+supabase functions deploy wa
+```
+
+### 5. Run
 
 ```bash
 flutter run
@@ -88,6 +110,7 @@ assets/images/    # logo, QRIS, dll
 - CRUD layanan (harga /kg), info toko, daftar pelanggan
 - Profil, pricelist, lokasi toko
 - Dialog tentang aplikasi + cek versi vs GitHub release/tag
+- Integrasi notifikasi WhatsApp ke admin saat ada transaksi baru.
 
 ## Catatan
 

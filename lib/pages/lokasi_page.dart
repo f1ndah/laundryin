@@ -12,7 +12,7 @@ class LokasiPage extends StatefulWidget {
 }
 
 class _LokasiPageState extends State<LokasiPage> {
-  Map<String, dynamic>? _toko;
+  List<Map<String, dynamic>> _tokoList = [];
   bool _loading = true;
 
   @override
@@ -22,8 +22,8 @@ class _LokasiPageState extends State<LokasiPage> {
   }
 
   Future<void> _loadData() async {
-    final data = await DbService.getToko();
-    if (mounted) setState(() { _toko = data; _loading = false; });
+    final data = await DbService.getTokoList();
+    if (mounted) setState(() { _tokoList = data; _loading = false; });
   }
 
   @override
@@ -35,17 +35,15 @@ class _LokasiPageState extends State<LokasiPage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : _toko == null
+          : _tokoList.isEmpty
               ? const AppEmptyState(icon: Icons.location_off, title: 'Data toko belum tersedia')
               : ListView(
-                  children: [
-                    AppListTile(
-                      leadingIcon: Icons.local_laundry_service,
-                      title: _toko!['nama'] ?? '-',
-                      subtitle: '${_toko!['alamat']}\nBuka: ${_toko!['jam_buka'] ?? '-'} - ${_toko!['jam_tutup'] ?? '-'}',
-                      trailing: const Icon(Icons.directions),
-                    ),
-                  ],
+                  children: _tokoList.map((toko) => AppListTile(
+                    leadingIcon: Icons.local_laundry_service,
+                    title: toko['nama'] ?? '-',
+                    subtitle: '${toko['alamat']}\nBuka: ${toko['jam_buka'] ?? '-'} — ${toko['jam_tutup'] ?? '-'}',
+                    trailing: const Icon(Icons.directions),
+                  )).toList(),
                 ),
     );
   }

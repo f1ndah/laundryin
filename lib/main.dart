@@ -27,11 +27,11 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.background,
         textTheme: GoogleFonts.poppinsTextTheme(),
         appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.surface,
-          foregroundColor: AppColors.text,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
-          titleTextStyle: AppTextStyles.subheading,
+          titleTextStyle: AppTextStyles.subheading.copyWith(color: Colors.white),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
