@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/app_version_service.dart';
 import '../theme.dart';
 import 'app_dialog.dart';
@@ -23,9 +24,11 @@ class AppAbout {
             context: ctx,
             title: 'Tentang LaundryIN',
             content: [
-              const Icon(Icons.local_laundry_service, size: 48, color: AppColors.primary),
+              const Icon(Icons.local_laundry_service,
+                  size: 48, color: AppColors.primary),
               const SizedBox(height: 12),
-              Text('LaundryIN', style: AppTextStyles.heading, textAlign: TextAlign.center),
+              Text('LaundryIN',
+                  style: AppTextStyles.heading, textAlign: TextAlign.center),
               const SizedBox(height: 4),
               Text(
                 'Cuci baju tanpa ribet',
@@ -36,7 +39,8 @@ class AppAbout {
               if (loading)
                 const Padding(
                   padding: EdgeInsets.all(12),
-                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  child:
+                      Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 )
               else ...[
                 Text(
@@ -46,23 +50,53 @@ class AppAbout {
                 ),
                 const SizedBox(height: 8),
                 Center(child: _badge(status)),
-                if (status?.checked == true && status?.remote != null) ...[
-                  const SizedBox(height: 6),
-                  Text(
-                    'GitHub: v${status!.remote}',
-                    style: AppTextStyles.caption,
-                    textAlign: TextAlign.center,
+                if (status?.checked == true && status?.remote != null) ...[],
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
+                  child: Column(
+                    children: [
+                      Text(
+                        'Dikembangkan oleh',
+                        style: AppTextStyles.caption,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Hamba Allah',
+                        style: AppTextStyles.bodyBold,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '© 2026 LaundryIN. Dibangun dengan Flutter & Supabase.',
+                        style: AppTextStyles.caption,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Tutup')),
+              TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Tutup')),
             ],
           );
         },
       ),
     );
+  }
+
+  static Future<void> _openUpdate(String? url) async {
+    final uri = Uri.tryParse(url ?? AppVersionService.releasesUrl);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   static Widget _badge(VersionStatus? status) {
@@ -80,16 +114,24 @@ class AppAbout {
         avatar: Icon(Icons.verified, size: 16, color: Colors.green.shade700),
         label: const Text('Latest'),
         backgroundColor: Colors.green.shade50,
-        labelStyle: TextStyle(fontSize: 12, color: Colors.green.shade800, fontWeight: FontWeight.bold),
+        labelStyle: TextStyle(
+            fontSize: 12,
+            color: Colors.green.shade800,
+            fontWeight: FontWeight.bold),
         visualDensity: VisualDensity.compact,
       );
     }
-    return Chip(
-      avatar: Icon(Icons.system_update, size: 16, color: Colors.orange.shade800),
+    return ActionChip(
+      avatar:
+          Icon(Icons.system_update, size: 16, color: Colors.orange.shade800),
       label: Text('Update tersedia (v${status.remote})'),
       backgroundColor: Colors.orange.shade50,
-      labelStyle: TextStyle(fontSize: 12, color: Colors.orange.shade900, fontWeight: FontWeight.bold),
+      labelStyle: TextStyle(
+          fontSize: 12,
+          color: Colors.orange.shade900,
+          fontWeight: FontWeight.bold),
       visualDensity: VisualDensity.compact,
+      onPressed: () => _openUpdate(status.releaseUrl),
     );
   }
 }

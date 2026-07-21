@@ -5,12 +5,14 @@ import 'package:package_info_plus/package_info_plus.dart';
 class VersionStatus {
   final String local;
   final String? remote;
+  final String? releaseUrl;
   final bool isLatest;
   final bool checked;
 
   const VersionStatus({
     required this.local,
     this.remote,
+    this.releaseUrl,
     required this.isLatest,
     required this.checked,
   });
@@ -19,6 +21,7 @@ class VersionStatus {
 class AppVersionService {
   // ponytail: repo hardcode, ganti kalau fork pindah
   static const repo = 'f1ndah/laundryin';
+  static const releasesUrl = 'https://github.com/$repo/releases';
 
   static Future<String> localVersion() async {
     final info = await PackageInfo.fromPlatform();
@@ -28,17 +31,18 @@ class AppVersionService {
   static Future<VersionStatus> check() async {
     final local = await localVersion();
     try {
-      final remote = await _latestTag();
-      if (remote == null) {
+      final latest = await _latestRelease();
+      if (latest == null) {
         return VersionStatus(local: local, isLatest: true, checked: false);
       }
-      final normRemote = _norm(remote);
+      final normRemote = _norm(latest.tag);
       final normLocal = _norm(local);
-      final latest = _cmp(normLocal, normRemote) >= 0;
+      final isLatest = _cmp(normLocal, normRemote) >= 0;
       return VersionStatus(
         local: local,
         remote: normRemote,
-        isLatest: latest,
+        releaseUrl: latest.url,
+        isLatest: isLatest,
         checked: true,
       );
     } catch (_) {
@@ -46,13 +50,16 @@ class AppVersionService {
     }
   }
 
-  static Future<String?> _latestTag() async {
+  static Future<({String tag, String url})?> _latestRelease() async {
     final releaseUri = Uri.parse('https://api.github.com/repos/$repo/releases/latest');
     final releaseRes = await http.get(releaseUri, headers: {'Accept': 'application/vnd.github+json'});
     if (releaseRes.statusCode == 200) {
       final body = jsonDecode(releaseRes.body) as Map<String, dynamic>;
       final tag = body['tag_name'] as String?;
-      if (tag != null && tag.isNotEmpty) return tag;
+      if (tag != null && tag.isNotEmpty) {
+        final url = (body['html_url'] as String?) ?? '$releasesUrl/tag/$tag';
+        return (tag: tag, url: url);
+      }
     }
 
     final tagsUri = Uri.parse('https://api.github.com/repos/$repo/tags?per_page=1');
@@ -60,7 +67,9 @@ class AppVersionService {
     if (tagsRes.statusCode != 200) return null;
     final list = jsonDecode(tagsRes.body) as List<dynamic>;
     if (list.isEmpty) return null;
-    return (list.first as Map<String, dynamic>)['name'] as String?;
+    final tag = (list.first as Map<String, dynamic>)['name'] as String?;
+    if (tag == null || tag.isEmpty) return null;
+    return (tag: tag, url: '$releasesUrl/tag/$tag');
   }
 
   static String _norm(String v) =>

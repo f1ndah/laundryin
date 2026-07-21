@@ -113,10 +113,13 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
-                    height: 280,
+                    height: 320,
                     child: TabBarView(
                       controller: _tab,
-                      children: [_loginForm(), _registerForm()],
+                      children: [
+                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _loginForm()),
+                        Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: _registerForm()),
+                      ],
                     ),
                   ),
                 ],

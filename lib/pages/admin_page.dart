@@ -318,6 +318,7 @@ class _LayananTabState extends State<_LayananTab> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'layanan_fab',
         backgroundColor: AppColors.primary,
+        elevation: 2,
         onPressed: _tambahLayanan,
         child: const Icon(Icons.add),
       ),
@@ -452,6 +453,7 @@ class _TokoTabState extends State<_TokoTab> {
       floatingActionButton: FloatingActionButton(
         heroTag: 'toko_fab',
         backgroundColor: AppColors.primary,
+        elevation: 2,
         onPressed: _editToko,
         child: const Icon(Icons.add),
       ),
