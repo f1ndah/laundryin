@@ -69,14 +69,16 @@ Disarankan: matikan email confirmation di Authentication → Providers → Email
 
 Aplikasi ini menggunakan Supabase Edge Functions untuk mengirim notifikasi WhatsApp otomatis ke admin saat ada transaksi baru via Gowa API.
 
-1. Atur *secrets* (environment variables) di Supabase Anda:
+1. Atur _secrets_ (environment variables) di Supabase Anda:
+
 ```bash
 supabase secrets set GOWA_BASE_URL="https://api-gowa-anda.com"
 supabase secrets set GOWA_TOKEN="username:password"
 supabase secrets set GOWA_DEVICE_ID="device-id-anda"
 ```
 
-2. *Deploy* Edge Function `wa` (jika nama folder di project Anda `notify-wa`, rename terlebih dahulu menjadi `wa` saat *deploy* atau sesuaikan `invoke('wa')` di kode Flutter):
+2. _Deploy_ Edge Function `wa` (jika nama folder di project Anda `notify-wa`, rename terlebih dahulu menjadi `wa` saat _deploy_ atau sesuaikan `invoke('wa')` di kode Flutter):
+
 ```bash
 supabase functions deploy wa
 ```
@@ -112,13 +114,22 @@ assets/images/    # logo, QRIS, dll
 - Dialog tentang aplikasi + cek versi vs GitHub release/tag
 - Integrasi notifikasi WhatsApp ke admin saat ada transaksi baru.
 
-### [1.0.1] — Banner & Voucher (Terbaru)
+### [1.0.1] — Banner & Voucher
 
 - Tambahan fitur Banner/Promosi (Admin bisa unggah banner, pelanggan melihat carousel banner di beranda).
-- Banner mendukung aspect ratio dinamis, kompresi otomatis (max 1200px, 70% quality), dan fitur *preview* *zoom-able* di pelanggan.
+- Banner mendukung aspect ratio dinamis, kompresi otomatis (max 1200px, 70% quality), dan fitur _preview_ _zoom-able_ di pelanggan.
 - Tambahan fitur Voucher & Diskon (Admin bisa membuat kode unik, mengatur potongan harga tetap, dan kuota pemakaian).
 - Pelanggan bisa melakukan klaim voucher pada form transaksi dan mendapatkan potongan harga langsung.
-- Desain *card* transaksi Admin diselaraskan dengan pelanggan (*flat design*, tanpa *shadow*).
+- Desain _card_ transaksi Admin diselaraskan dengan pelanggan (_flat design_, tanpa _shadow_).
+
+### [1.0.2] — Nota & Notifikasi Batal (Terbaru)
+
+- Halaman Nota transaksi dengan fitur bagikan (share) ke WhatsApp/media lain.
+- Notifikasi WhatsApp ke admin saat transaksi dibatalkan pelanggan.
+- Detail transaksi pelanggan kini menampilkan nama toko & tombol chat WhatsApp langsung ke admin toko.
+- Refactor FAB admin pakai komponen `AppFab`, tombol login pakai `AppButton`.
+- Dialog Tentang menampilkan logo aplikasi.
+
 ## Catatan
 
 - `lib/services/supabase_config.dart` **tidak** di-commit (lihat `.gitignore`).
