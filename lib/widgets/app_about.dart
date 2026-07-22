@@ -25,8 +25,15 @@ class AppAbout {
             context: ctx,
             title: 'Tentang LaundryIN',
             content: [
-              const Icon(Icons.local_laundry_service,
-                  size: 48, color: AppColors.primary),
+              Image.asset(
+                'assets/images/logo.png',
+                height: 64,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.local_laundry_service,
+                  size: 48,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 12),
               Text('LaundryIN',
                   style: AppTextStyles.heading, textAlign: TextAlign.center),
@@ -84,7 +91,10 @@ class AppAbout {
               ],
             ],
             actions: [
-              AppButton(label: 'Tutup', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+              AppButton(
+                  label: 'Tutup',
+                  variant: AppButtonVariant.ghost,
+                  onPressed: () => Navigator.pop(ctx)),
             ],
           );
         },

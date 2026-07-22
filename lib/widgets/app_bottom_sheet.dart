@@ -6,8 +6,15 @@ class SheetAction {
   final String label;
   final VoidCallback? onTap;
   final Color? color;
+  final Widget? trailing;
 
-  const SheetAction({required this.icon, required this.label, this.onTap, this.color});
+  const SheetAction({
+    required this.icon,
+    required this.label,
+    this.onTap,
+    this.color,
+    this.trailing,
+  });
 }
 
 class AppBottomSheet {
@@ -49,6 +56,7 @@ class AppBottomSheet {
               ...actions.map((a) => ListTile(
                     leading: Icon(a.icon, color: a.color ?? AppColors.text),
                     title: Text(a.label, style: TextStyle(color: a.color ?? AppColors.text, fontWeight: FontWeight.w500)),
+                    trailing: a.trailing,
                     onTap: () {
                       Navigator.pop(context);
                       a.onTap?.call();

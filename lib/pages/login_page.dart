@@ -150,11 +150,12 @@ class _LoginPageState extends State<LoginPage> {
                   if (_isLogin)
                     Align(
                       alignment: Alignment.centerRight,
-                      child: TextButton(
+                      child: AppButton(
+                        label: 'Lupa Password?',
+                        variant: AppButtonVariant.ghost,
                         onPressed: () {
                           _snack('Fitur lupa password sedang dikembangkan.');
                         },
-                        child: const Text('Lupa Password?', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
                       ),
                     )
                   else
@@ -182,17 +183,15 @@ class _LoginPageState extends State<LoginPage> {
                         _isLogin ? 'Belum punya akun?' : 'Sudah punya akun?',
                         style: const TextStyle(color: Colors.grey),
                       ),
-                      TextButton(
+                      AppButton(
+                        label: _isLogin ? 'Daftar di sini' : 'Masuk di sini',
+                        variant: AppButtonVariant.ghost,
                         onPressed: () {
                           setState(() {
                             _isLogin = !_isLogin;
                             _formKey.currentState?.reset();
                           });
                         },
-                        child: Text(
-                          _isLogin ? 'Daftar di sini' : 'Masuk di sini',
-                          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
-                        ),
                       ),
                     ],
                   ),

@@ -5,7 +5,7 @@ const GOWA_TOKEN = Deno.env.get("GOWA_TOKEN") ?? "";
 const GOWA_DEVICE = Deno.env.get("GOWA_DEVICE_ID") ?? "";
 
 interface Payload {
-  type: "INSERT";
+  type: "INSERT" | "UPDATE";
   table: "transactions";
   record: {
     id: number;
@@ -80,8 +80,8 @@ serve(async (req: Request) => {
     const payload: Payload = await req.json();
     console.log(`[Webhook] Menerima payload untuk tabel: ${payload.table}, event: ${payload.type}`);
 
-    if (payload.type !== "INSERT" || payload.table !== "transactions") {
-      console.log(`[Webhook] Diabaikan karena bukan INSERT di transactions.`);
+    if ((payload.type !== "INSERT" && payload.type !== "UPDATE") || payload.table !== "transactions") {
+      console.log(`[Webhook] Diabaikan, bukan INSERT/UPDATE di transactions.`);
       return new Response("Ignored", { status: 200 });
     }
 
@@ -98,7 +98,19 @@ serve(async (req: Request) => {
 
     const tanggal = new Date(rec.tanggal).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
 
-    const message = `🧺 *LaundryIN — Pesanan Baru*
+    const isCancel = payload.type === "UPDATE" && rec.status === "Batal";
+    const message = isCancel
+      ? `🚫 *LaundryIN — Pesanan Dibatalkan*
+
+👤 ${rec.nama_pelanggan}
+📍 ${rec.alamat}
+👕 ${rec.jenis} • ${rec.berat}Kg
+💰 Rp ${rec.harga.toLocaleString("id-ID")} (${rec.metode})
+🔖 Kode: #${rec.kode ?? rec.id}
+⏰ ${tanggal}
+
+_Pesanan telah dibatalkan oleh pelanggan._`
+      : `🧺 *LaundryIN — Pesanan Baru*
 
 👤 ${rec.nama_pelanggan}
 📍 ${rec.alamat}

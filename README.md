@@ -113,6 +113,7 @@ assets/images/    # logo, QRIS, dll
 - Integrasi notifikasi WhatsApp ke admin saat ada transaksi baru.
 
 ### [1.0.1] — Banner & Voucher (Terbaru)
+
 - Tambahan fitur Banner/Promosi (Admin bisa unggah banner, pelanggan melihat carousel banner di beranda).
 - Banner mendukung aspect ratio dinamis, kompresi otomatis (max 1200px, 70% quality), dan fitur *preview* *zoom-able* di pelanggan.
 - Tambahan fitur Voucher & Diskon (Admin bisa membuat kode unik, mengatur potongan harga tetap, dan kuota pemakaian).

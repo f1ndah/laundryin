@@ -16,6 +16,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_empty_state.dart';
 import '../widgets/app_input.dart';
+import '../widgets/app_fab.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -471,12 +472,10 @@ class _LayananPageState extends State<_LayananPage> {
         title: const Text('Layanan & Harga'),
         backgroundColor: AppColors.primary,
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'layanan_fab',
-        backgroundColor: AppColors.primary,
-        elevation: 2,
+      floatingActionButton: AppFab(
+        label: 'Layanan',
+        icon: Icons.add,
         onPressed: _tambahLayanan,
-        child: const Icon(Icons.add),
       ),
       body: AppListView(
         loading: _loading,
@@ -608,12 +607,10 @@ class _TokoPageState extends State<_TokoPage> {
         title: const Text('Cabang Toko'),
         backgroundColor: AppColors.primary,
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'toko_fab',
-        backgroundColor: AppColors.primary,
-        elevation: 2,
+      floatingActionButton: AppFab(
+        label: 'Toko',
+        icon: Icons.add,
         onPressed: _tambahToko,
-        child: const Icon(Icons.add),
       ),
       body: AppListView(
         loading: _loading,
@@ -739,12 +736,10 @@ class _BannerPageState extends State<_BannerPage> {
         title: const Text('Banners & Promosi'),
         backgroundColor: AppColors.primary,
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'banner_fab',
-        backgroundColor: AppColors.primary,
-        elevation: 2,
+      floatingActionButton: AppFab(
+        label: 'Banner',
+        icon: Icons.add_photo_alternate,
         onPressed: _uploadBanner,
-        child: const Icon(Icons.add_photo_alternate),
       ),
       body: AppListView(
         loading: _loading,
@@ -897,12 +892,10 @@ class _VoucherPageState extends State<_VoucherPage> {
         title: const Text('Voucher & Diskon'),
         backgroundColor: AppColors.primary,
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'voucher_fab',
-        backgroundColor: AppColors.primary,
-        elevation: 2,
+      floatingActionButton: AppFab(
+        label: 'Voucher',
+        icon: Icons.add,
         onPressed: () => _formVoucher(),
-        child: const Icon(Icons.add),
       ),
       body: AppListView(
         loading: _loading,

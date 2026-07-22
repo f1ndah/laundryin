@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../theme.dart';
 import '../../services/auth_service.dart';
 import '../../services/db_service.dart';
@@ -14,6 +15,7 @@ import '../../widgets/app_list_view.dart';
 import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/app_fab.dart';
 import '../../widgets/app_snackbar.dart';
+import '../nota_page.dart';
 class TransaksiTab extends StatefulWidget {
   const TransaksiTab();
 
@@ -54,11 +56,15 @@ class TransaksiTabState extends State<TransaksiTab> {
   }
 
   Future<void> _batalTransaksi(int id) async {
+    final trx = _transactions.firstWhere((t) => t['id'] == id);
     await DbService.batalTransaction(id);
     if (mounted) {
       AppSnackbar.success(context, 'Transaksi dibatalkan. Dana dikembalikan ke saldo.');
     }
     _loadData();
+    await Supabase.instance.client.functions.invoke('wa',
+      body: {'type': 'UPDATE', 'table': 'transactions', 'record': {...trx, 'status': 'Batal'}},
+    ).catchError((e) => debugPrint('WA Error: $e'));
   }
 
   List<Map<String, dynamic>> get _filtered {
@@ -123,9 +129,7 @@ class TransaksiTabState extends State<TransaksiTab> {
 
   void _lihatBukti(String url) => showDialog(
         context: context,
-        builder: (_) => Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        builder: (ctx) => Dialog(
           insetPadding: const EdgeInsets.all(10),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -134,11 +138,11 @@ class TransaksiTabState extends State<TransaksiTab> {
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(url),
               ),
-              const SizedBox(height: 10),
-              AppButton(
-                label: 'Tutup',
-                variant: AppButtonVariant.ghost,
-                onPressed: () => Navigator.pop(context),
+              const SizedBox(height: 4),
+              TextButton.icon(
+                onPressed: () => Navigator.pop(ctx),
+                icon: const Icon(Icons.close, size: 18),
+                label: const Text('Tutup'),
               ),
             ],
           ),
@@ -515,24 +519,48 @@ class TransaksiTabState extends State<TransaksiTab> {
         children: filtered.map((trx) {
           final tanggal = DateFormat('dd MMM yyyy, HH:mm')
               .format(DateTime.parse(trx['tanggal']));
+          final toko = _tokoList.firstWhere(
+              (t) => t['id'] == trx['toko_id'],
+              orElse: () => {'nama': '-', 'nomor_admin': ''});
+          final tokoName = toko['nama'];
+          final noWa = toko['nomor_admin']?.toString() ?? '';
+          final subtitle =
+              '${trx['berat']} Kg • ${formatRupiah(trx['harga'])} • $tokoName\n$tanggal';
           return AppTransactionCard(
             title: trx['jenis'] ?? '-',
-            subtitle:
-                '${trx['berat']} Kg • ${formatRupiah(trx['harga'])} • $tanggal',
+            subtitle: subtitle,
             status: trx['status'],
             onTap: () => AppBottomSheet.show(
               context: context,
-              title: trx['jenis'] ?? '-',
+              title: '${trx['jenis']} • ${trx['berat']}Kg',
               subtitle: formatRupiah(trx['harga']),
               actions: [
                 SheetAction(
-                    icon: Icons.local_laundry_service,
-                    label: '${trx['berat']}Kg'),
+                    icon: Icons.storefront,
+                    label: tokoName ?? '-',
+                    trailing: noWa.isNotEmpty
+                        ? IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: const Icon(Icons.message,
+                                color: Colors.green, size: 22),
+                            onPressed: () => launchUrl(
+                              Uri.parse('https://wa.me/$noWa'),
+                              mode: LaunchMode.externalApplication,
+                            ),
+                          )
+                        : null,
+                ),
                 SheetAction(
-                    icon: Icons.location_on_outlined,
-                    label: trx['alamat'] ?? '-'),
-                SheetAction(
-                    icon: Icons.payment, label: trx['metode'] ?? 'QRIS'),
+                    icon: Icons.receipt_long,
+                    label: 'Lihat Nota',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              NotaPage(trx: trx, tokoName: tokoName ?? '-')),
+                    ),
+                ),
                 SheetAction(icon: Icons.access_time, label: tanggal),
                 if (trx['status'] != 'Selesai' && trx['status'] != 'Batal')
                   SheetAction(
