@@ -1,0 +1,4 @@
+- [x] Fix redundant profile fetching in `AuthCheck`
+- [x] Ensure `HomePage` state is preserved on navigation pop
+- [x] Verify fix by manual testing simulation
+- [x] Create walkthrough artifact

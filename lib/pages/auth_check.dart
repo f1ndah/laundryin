@@ -13,24 +13,37 @@ class AuthCheck extends StatefulWidget {
 }
 
 class _AuthCheckState extends State<AuthCheck> {
+  Future<Map<String, dynamic>?>? _profileFuture;
+  String? _lastUserId;
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<AuthState>(
       stream: AuthService.authStateChanges,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting && _profileFuture == null) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
         final session = snapshot.data?.session;
-        if (session == null) {
+        final user = session?.user ?? AuthService.currentUser;
+
+        if (user == null) {
+          _profileFuture = null;
+          _lastUserId = null;
           return const LoginPage();
         }
 
+        // Only fetch profile if user has changed
+        if (_profileFuture == null || _lastUserId != user.id) {
+          _lastUserId = user.id;
+          _profileFuture = AuthService.getProfile();
+        }
+
         return FutureBuilder<Map<String, dynamic>?>(
-          future: AuthService.getProfile(),
+          future: _profileFuture,
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -40,11 +53,17 @@ class _AuthCheckState extends State<AuthCheck> {
 
             final profile = profileSnapshot.data;
             if (profile == null) {
-              AuthService.logout();
+              // Only logout if we're sure the fetch finished and returned null
+              if (profileSnapshot.connectionState == ConnectionState.done) {
+                AuthService.logout();
+                return const Scaffold(
+                  body: Center(
+                    child: Text('Session tidak valid, silahkan login ulang'),
+                  ),
+                );
+              }
               return const Scaffold(
-                body: Center(
-                  child: Text('Session tidak valid, silahkan login ulang'),
-                ),
+                body: Center(child: CircularProgressIndicator()),
               );
             }
 

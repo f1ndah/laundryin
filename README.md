@@ -130,6 +130,10 @@ assets/images/    # logo, QRIS, dll
 - Refactor FAB admin pakai komponen `AppFab`, tombol login pakai `AppButton`.
 - Dialog Tentang menampilkan logo aplikasi.
 
+### [1.0.3] — Fix Bug
+
+- Perbaiki beberapa bug
+
 ## Catatan
 
 - `lib/services/supabase_config.dart` **tidak** di-commit (lihat `.gitignore`).
