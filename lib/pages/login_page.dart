@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    
+
     try {
       if (_isLogin) {
         await AuthService.login(_email.text.trim(), _password.text);
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       if (mounted) _snack('${_isLogin ? 'Login' : 'Registrasi'} gagal: $e');
     }
-    
+
     if (mounted) setState(() => _loading = false);
   }
 
@@ -91,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                       errorBuilder: (_, __, ___) => Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -105,12 +105,17 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 32),
                   Text(
                     _isLogin ? 'Selamat Datang!' : 'Buat Akun Baru',
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.text),
+                    style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isLogin ? 'Masuk untuk melanjutkan ke LaundryIN' : 'Daftar sekarang untuk mulai memesan',
+                    _isLogin
+                        ? 'Masuk untuk melanjutkan ke LaundryIN'
+                        : 'Daftar sekarang untuk mulai memesan',
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                     textAlign: TextAlign.center,
                   ),
@@ -122,7 +127,8 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _nama,
                       label: 'Nama Lengkap',
                       prefixIcon: Icons.person_outline,
-                      validator: (v) => v!.trim().isEmpty ? 'Nama wajib diisi' : null,
+                      validator: (v) =>
+                          v!.trim().isEmpty ? 'Nama wajib diisi' : null,
                     ),
                     const SizedBox(height: 20),
                   ],
@@ -139,13 +145,16 @@ class _LoginPageState extends State<LoginPage> {
                     prefixIcon: Icons.lock_outline,
                     obscureText: _obscure,
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: Colors.grey),
+                      icon: Icon(
+                          _obscure ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.grey),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
-                    validator: (v) => v!.length < 6 ? 'Password minimal 6 karakter' : null,
+                    validator: (v) =>
+                        v!.length < 6 ? 'Password minimal 6 karakter' : null,
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Lupa Password (mock)
                   if (_isLogin)
                     Align(
@@ -160,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
                     )
                   else
                     const SizedBox(height: 24),
-                  
+
                   if (_isLogin) const SizedBox(height: 16),
 
                   // Submit Button

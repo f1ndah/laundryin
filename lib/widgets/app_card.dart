@@ -23,7 +23,7 @@ class AppCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.text.withOpacity(0.05),
+              color: AppColors.text.withValues(alpha: 0.05),
               offset: const Offset(0, 2),
               blurRadius: 8,
             ),
@@ -56,7 +56,7 @@ class AppMenuCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: color ?? AppColors.primary.withOpacity(0.1),
+          color: color ?? AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -64,7 +64,8 @@ class AppMenuCard extends StatelessWidget {
           children: [
             Icon(icon, size: 40, color: AppColors.primary),
             const SizedBox(height: 12),
-            Text(label, style: AppTextStyles.bodyBold, textAlign: TextAlign.center),
+            Text(label,
+                style: AppTextStyles.bodyBold, textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -93,7 +94,7 @@ class AppStatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.text.withOpacity(0.05),
+            color: AppColors.text.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 8,
           ),
@@ -161,9 +162,10 @@ class AppTransactionCard extends StatelessWidget {
                   child: Text(title, style: AppTextStyles.bodyBold),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.2),
+                    color: statusColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

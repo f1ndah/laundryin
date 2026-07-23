@@ -45,7 +45,8 @@ class _AdminPageState extends State<AdminPage> {
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textLight,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.receipt_long), label: 'Transaksi'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.receipt_long), label: 'Transaksi'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'Pelanggan'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
         ],
@@ -73,7 +74,11 @@ class _TransaksiTabState extends State<_TransaksiTab> {
 
   Future<void> _loadData() async {
     final data = await DbService.getTransactions();
-    if (mounted) setState(() { _transactions = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _transactions = data;
+        _loading = false;
+      });
   }
 
   void _ubahStatus(int id, String currentStatus) async {
@@ -82,27 +87,34 @@ class _TransaksiTabState extends State<_TransaksiTab> {
     _loadData();
   }
 
-  IconData _statusIcon(String status) => const {
-    'Menunggu': Icons.play_arrow,
-    'Proses': Icons.check_circle,
-  }[status] ?? Icons.help;
+  IconData _statusIcon(String status) =>
+      const {
+        'Menunggu': Icons.play_arrow,
+        'Proses': Icons.check_circle,
+      }[status] ??
+      Icons.help;
 
-  String _statusNextLabel(String status) => {
-    'Menunggu': 'Tandai Proses',
-    'Proses': 'Tandai Selesai',
-  }[status] ?? '';
+  String _statusNextLabel(String status) =>
+      {
+        'Menunggu': 'Tandai Proses',
+        'Proses': 'Tandai Selesai',
+      }[status] ??
+      '';
 
-  Color _statusColor(String status) => {
-    'Menunggu': AppColors.accent,
-    'Proses': AppColors.success,
-  }[status] ?? AppColors.textLight;
+  Color _statusColor(String status) =>
+      {
+        'Menunggu': AppColors.accent,
+        'Proses': AppColors.success,
+      }[status] ??
+      AppColors.textLight;
 
   @override
   Widget build(BuildContext context) {
     final totalPendapatan = _transactions
         .where((e) => e['status'] == 'Selesai')
         .fold<int>(0, (sum, item) => sum + (item['harga'] as int));
-    final menunggu = _transactions.where((e) => e['status'] == 'Menunggu').length;
+    final menunggu =
+        _transactions.where((e) => e['status'] == 'Menunggu').length;
     final proses = _transactions.where((e) => e['status'] == 'Proses').length;
     final selesai = _transactions.where((e) => e['status'] == 'Selesai').length;
 
@@ -122,49 +134,94 @@ class _TransaksiTabState extends State<_TransaksiTab> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.success, Color(0xFF45B7A0)]),
+                    gradient: const LinearGradient(
+                        colors: [AppColors.success, Color(0xFF45B7A0)]),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('Total Pendapatan', style: TextStyle(color: Colors.white, fontSize: 14)),
-                        Text('Transaksi Selesai', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                      ]),
-                      Text(formatRupiah(totalPendapatan), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Total Pendapatan',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14)),
+                            Text('Transaksi Selesai',
+                                style: TextStyle(
+                                    color: Colors.white70, fontSize: 11)),
+                          ]),
+                      Text(formatRupiah(totalPendapatan),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 12),
                 Row(children: [
-                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
-                    Text('$menunggu', style: AppTextStyles.heading.copyWith(color: Colors.orange.shade700)),
-                    const SizedBox(height: 4),
-                    const Text('Menunggu', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                  ]))),
+                  Expanded(
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(children: [
+                            Text('$menunggu',
+                                style: AppTextStyles.heading
+                                    .copyWith(color: Colors.orange.shade700)),
+                            const SizedBox(height: 4),
+                            const Text('Menunggu',
+                                style: TextStyle(
+                                    fontSize: 11, fontWeight: FontWeight.w600)),
+                          ]))),
                   const SizedBox(width: 8),
-                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
-                    Text('$proses', style: AppTextStyles.heading.copyWith(color: Colors.blue.shade700)),
-                    const SizedBox(height: 4),
-                    const Text('Proses', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                  ]))),
+                  Expanded(
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(children: [
+                            Text('$proses',
+                                style: AppTextStyles.heading
+                                    .copyWith(color: Colors.blue.shade700)),
+                            const SizedBox(height: 4),
+                            const Text('Proses',
+                                style: TextStyle(
+                                    fontSize: 11, fontWeight: FontWeight.w600)),
+                          ]))),
                   const SizedBox(width: 8),
-                  Expanded(child: Container(decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(12)), padding: const EdgeInsets.all(12), child: Column(children: [
-                    Text('$selesai', style: AppTextStyles.heading.copyWith(color: Colors.green.shade700)),
-                    const SizedBox(height: 4),
-                    const Text('Selesai', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                  ]))),
+                  Expanded(
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.green.shade50,
+                              borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(children: [
+                            Text('$selesai',
+                                style: AppTextStyles.heading
+                                    .copyWith(color: Colors.green.shade700)),
+                            const SizedBox(height: 4),
+                            const Text('Selesai',
+                                style: TextStyle(
+                                    fontSize: 11, fontWeight: FontWeight.w600)),
+                          ]))),
                 ]),
                 const SizedBox(height: 16),
                 if (_transactions.isEmpty)
-                  const AppEmptyState(icon: Icons.inventory_2_outlined, title: 'Belum ada transaksi')
+                  const AppEmptyState(
+                      icon: Icons.inventory_2_outlined,
+                      title: 'Belum ada transaksi')
                 else
                   ..._transactions.map((trx) {
-                    final tanggal = DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(trx['tanggal']));
+                    final tanggal = DateFormat('dd MMM yyyy, HH:mm')
+                        .format(DateTime.parse(trx['tanggal']));
                     return AppTransactionCard(
                       title: trx['nama_pelanggan'] ?? '-',
-                      subtitle: '${trx['jenis']} ${trx['berat']}Kg • ${trx['metode'] ?? 'QRIS'} • ${formatRupiah(trx['harga'])}\n$tanggal',
+                      subtitle:
+                          '${trx['jenis']} ${trx['berat']}Kg • ${trx['metode'] ?? 'QRIS'} • ${formatRupiah(trx['harga'])}\n$tanggal',
                       status: trx['status'],
                       color: AppColors.surface,
                       onTap: () => AppBottomSheet.show(
@@ -174,7 +231,8 @@ class _TransaksiTabState extends State<_TransaksiTab> {
                         actions: [
                           SheetAction(
                             icon: Icons.info_outline,
-                            label: '${trx['jenis']} • ${trx['berat']}Kg • ${trx['metode'] ?? 'QRIS'}',
+                            label:
+                                '${trx['jenis']} • ${trx['berat']}Kg • ${trx['metode'] ?? 'QRIS'}',
                           ),
                           SheetAction(
                             icon: Icons.location_on_outlined,
@@ -184,7 +242,8 @@ class _TransaksiTabState extends State<_TransaksiTab> {
                             icon: Icons.access_time,
                             label: tanggal,
                           ),
-                          if (trx['status'] == 'Batal' || trx['status'] == 'Selesai')
+                          if (trx['status'] == 'Batal' ||
+                              trx['status'] == 'Selesai')
                             SheetAction(
                               icon: Icons.block,
                               label: trx['status'] == 'Batal'
@@ -197,7 +256,8 @@ class _TransaksiTabState extends State<_TransaksiTab> {
                               icon: _statusIcon(trx['status']),
                               label: _statusNextLabel(trx['status']),
                               color: _statusColor(trx['status']),
-                              onTap: () => _ubahStatus(trx['id'], trx['status']),
+                              onTap: () =>
+                                  _ubahStatus(trx['id'], trx['status']),
                             ),
                         ],
                       ),
@@ -221,11 +281,18 @@ class _PelangganTabState extends State<_PelangganTab> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   Future<void> _loadData() async {
     final data = await DbService.getPelanggan();
-    if (mounted) setState(() { _pelanggan = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _pelanggan = data;
+        _loading = false;
+      });
   }
 
   @override
@@ -244,29 +311,42 @@ class _PelangganTabState extends State<_PelangganTab> {
         emptyIcon: Icons.people_outline,
         emptyTitle: 'Belum ada pelanggan',
         onRefresh: _loadData,
-        children: _pelanggan.map((p) => GestureDetector(
-          onTap: () => AppBottomSheet.show(
-            context: context,
-            title: p['nama'] ?? '-',
-            subtitle: p['email'] ?? '-',
-            actions: [
-              SheetAction(icon: Icons.calendar_today, label: 'Terdaftar: ${DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at']))}'),
-            ],
-          ),
-          child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12)),
-          child: Row(children: [
-            CircleAvatar(child: Text((p['nama'] ?? 'A')[0])),
-            const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(p['nama'] ?? '-', style: AppTextStyles.bodyBold),
-              Text(p['email'] ?? '-', style: AppTextStyles.caption),
-            ])),
-            Text(DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at'])), style: AppTextStyles.caption),
-          ]),
-        ))).toList(),
+        children: _pelanggan
+            .map((p) => GestureDetector(
+                onTap: () => AppBottomSheet.show(
+                      context: context,
+                      title: p['nama'] ?? '-',
+                      subtitle: p['email'] ?? '-',
+                      actions: [
+                        SheetAction(
+                            icon: Icons.calendar_today,
+                            label:
+                                'Terdaftar: ${DateFormat('dd MMM yyyy').format(DateTime.parse(p['created_at']))}'),
+                      ],
+                    ),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12)),
+                  child: Row(children: [
+                    CircleAvatar(child: Text((p['nama'] ?? 'A')[0])),
+                    const SizedBox(width: 12),
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          Text(p['nama'] ?? '-', style: AppTextStyles.bodyBold),
+                          Text(p['email'] ?? '-', style: AppTextStyles.caption),
+                        ])),
+                    Text(
+                        DateFormat('dd MMM yyyy')
+                            .format(DateTime.parse(p['created_at'])),
+                        style: AppTextStyles.caption),
+                  ]),
+                )))
+            .toList(),
       ),
     );
   }
@@ -284,11 +364,18 @@ class _ProfilTabState extends State<_ProfilTab> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   Future<void> _loadData() async {
     final profile = await AuthService.getProfile();
-    if (mounted) setState(() { _profile = profile; _loading = false; });
+    if (mounted)
+      setState(() {
+        _profile = profile;
+        _loading = false;
+      });
   }
 
   @override
@@ -337,22 +424,30 @@ class _ProfilTabState extends State<_ProfilTab> {
                   AppListTile(
                     leadingIcon: Icons.local_laundry_service,
                     title: 'Layanan & Harga',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _LayananPage())),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const _LayananPage())),
                   ),
                   AppListTile(
                     leadingIcon: Icons.store,
                     title: 'Toko',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _TokoPage())),
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const _TokoPage())),
                   ),
                   AppListTile(
                     leadingIcon: Icons.campaign,
                     title: 'Banners & Promosi',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _BannerPage())),
+                    onTap: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const _BannerPage())),
                   ),
                   AppListTile(
                     leadingIcon: Icons.discount_outlined,
                     title: 'Voucher & Diskon',
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const _VoucherPage())),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const _VoucherPage())),
                   ),
                   AppListTile(
                     leadingIcon: Icons.logout,
@@ -378,11 +473,18 @@ class _LayananPageState extends State<_LayananPage> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   Future<void> _loadData() async {
     final data = await DbService.getLayanan();
-    if (mounted) setState(() { _layanan = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _layanan = data;
+        _loading = false;
+      });
   }
 
   void _tambahLayanan() {
@@ -396,10 +498,16 @@ class _LayananPageState extends State<_LayananPage> {
         content: [
           AppInput(controller: jenisCtrl, label: 'Jenis Cucian'),
           const SizedBox(height: 12),
-          AppInput(controller: hargaCtrl, label: 'Harga /kg', keyboardType: TextInputType.number),
+          AppInput(
+              controller: hargaCtrl,
+              label: 'Harga /kg',
+              keyboardType: TextInputType.number),
         ],
         actions: [
-          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+          AppButton(
+              label: 'Batal',
+              variant: AppButtonVariant.ghost,
+              onPressed: () => Navigator.pop(ctx)),
           AppButton(
             label: 'Simpan',
             variant: AppButtonVariant.primary,
@@ -419,8 +527,10 @@ class _LayananPageState extends State<_LayananPage> {
   }
 
   void _ubahLayanan(Map<String, dynamic> item) {
-    final jenisCtrl = TextEditingController(text: item['jenis']?.toString() ?? '');
-    final hargaCtrl = TextEditingController(text: item['harga']?.toString() ?? '');
+    final jenisCtrl =
+        TextEditingController(text: item['jenis']?.toString() ?? '');
+    final hargaCtrl =
+        TextEditingController(text: item['harga']?.toString() ?? '');
     AppDialog.show(
       context: context,
       builder: (ctx) => AppDialog.themed(
@@ -429,10 +539,16 @@ class _LayananPageState extends State<_LayananPage> {
         content: [
           AppInput(controller: jenisCtrl, label: 'Jenis Cucian'),
           const SizedBox(height: 12),
-          AppInput(controller: hargaCtrl, label: 'Harga /kg', keyboardType: TextInputType.number),
+          AppInput(
+              controller: hargaCtrl,
+              label: 'Harga /kg',
+              keyboardType: TextInputType.number),
         ],
         actions: [
-          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+          AppButton(
+              label: 'Batal',
+              variant: AppButtonVariant.ghost,
+              onPressed: () => Navigator.pop(ctx)),
           AppButton(
             label: 'Simpan',
             variant: AppButtonVariant.primary,
@@ -440,7 +556,8 @@ class _LayananPageState extends State<_LayananPage> {
               final jenis = jenisCtrl.text.trim();
               final harga = int.tryParse(hargaCtrl.text);
               if (jenis.isNotEmpty && harga != null && harga > 0) {
-                await DbService.updateLayanan((item['id'] as num).toInt(), jenis: jenis, harga: harga);
+                await DbService.updateLayanan((item['id'] as num).toInt(),
+                    jenis: jenis, harga: harga);
                 Navigator.pop(ctx);
                 _loadData();
               }
@@ -484,20 +601,31 @@ class _LayananPageState extends State<_LayananPage> {
         emptyTitle: 'Belum ada layanan',
         emptySubtitle: 'Tekan tombol + untuk tambah layanan',
         onRefresh: _loadData,
-        children: _layanan.map((item) => AppListTile(
-          leadingIcon: Icons.local_laundry_service,
-          title: item['jenis'],
-          trailing: Text('${formatRupiah(item['harga'])}/kg', style: AppTextStyles.bodyBold),
-          onTap: () => AppBottomSheet.show(
-            context: context,
-            title: item['jenis'],
-            subtitle: '${formatRupiah(item['harga'])}/kg',
-            actions: [
-              SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _ubahLayanan(item)),
-              SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusLayanan(item)),
-            ],
-          ),
-        )).toList(),
+        children: _layanan
+            .map((item) => AppListTile(
+                  leadingIcon: Icons.local_laundry_service,
+                  title: item['jenis'],
+                  trailing: Text('${formatRupiah(item['harga'])}/kg',
+                      style: AppTextStyles.bodyBold),
+                  onTap: () => AppBottomSheet.show(
+                    context: context,
+                    title: item['jenis'],
+                    subtitle: '${formatRupiah(item['harga'])}/kg',
+                    actions: [
+                      SheetAction(
+                          icon: Icons.edit,
+                          label: 'Ubah',
+                          color: AppColors.primary,
+                          onTap: () => _ubahLayanan(item)),
+                      SheetAction(
+                          icon: Icons.delete,
+                          label: 'Hapus',
+                          color: AppColors.danger,
+                          onTap: () => _hapusLayanan(item)),
+                    ],
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -515,11 +643,18 @@ class _TokoPageState extends State<_TokoPage> {
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
   Future<void> _loadData() async {
     final data = await DbService.getTokoList();
-    if (mounted) setState(() { _tokoList = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _tokoList = data;
+        _loading = false;
+      });
   }
 
   void _tambahToko() => _formToko();
@@ -530,8 +665,10 @@ class _TokoPageState extends State<_TokoPage> {
     final isNew = item == null;
     final namaCtrl = TextEditingController(text: item?['nama'] ?? '');
     final alamatCtrl = TextEditingController(text: item?['alamat'] ?? '');
-    final jamBukaCtrl = TextEditingController(text: item?['jam_buka'] ?? '08:00');
-    final jamTutupCtrl = TextEditingController(text: item?['jam_tutup'] ?? '20:00');
+    final jamBukaCtrl =
+        TextEditingController(text: item?['jam_buka'] ?? '08:00');
+    final jamTutupCtrl =
+        TextEditingController(text: item?['jam_tutup'] ?? '20:00');
     final noWACtrl = TextEditingController(text: item?['nomor_admin'] ?? '');
 
     AppDialog.show(
@@ -545,15 +682,23 @@ class _TokoPageState extends State<_TokoPage> {
           AppInput(controller: alamatCtrl, label: 'Alamat', maxLines: 2),
           const SizedBox(height: 12),
           Row(children: [
-            Expanded(child: AppInput(controller: jamBukaCtrl, label: 'Jam Buka')),
+            Expanded(
+                child: AppInput(controller: jamBukaCtrl, label: 'Jam Buka')),
             const SizedBox(width: 12),
-            Expanded(child: AppInput(controller: jamTutupCtrl, label: 'Jam Tutup')),
+            Expanded(
+                child: AppInput(controller: jamTutupCtrl, label: 'Jam Tutup')),
           ]),
           const SizedBox(height: 12),
-          AppInput(controller: noWACtrl, label: 'No WA Admin (628xxx / 08xxx)', keyboardType: TextInputType.phone),
+          AppInput(
+              controller: noWACtrl,
+              label: 'No WA Admin (628xxx / 08xxx)',
+              keyboardType: TextInputType.phone),
         ],
         actions: [
-          AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+          AppButton(
+              label: 'Batal',
+              variant: AppButtonVariant.ghost,
+              onPressed: () => Navigator.pop(ctx)),
           AppButton(
             label: 'Simpan',
             variant: AppButtonVariant.primary,
@@ -619,21 +764,36 @@ class _TokoPageState extends State<_TokoPage> {
         emptyTitle: 'Belum ada cabang toko',
         emptySubtitle: 'Tekan tombol + untuk tambah cabang',
         onRefresh: _loadData,
-        children: _tokoList.map((item) => AppListTile(
-          leadingIcon: Icons.store,
-          title: item['nama'],
-          subtitle: item['alamat'] + (item['nomor_admin'] != null && item['nomor_admin'].toString().isNotEmpty ? '\nWA: ${item['nomor_admin']}' : ''),
-          trailing: Text('${item['jam_buka']} — ${item['jam_tutup']}', style: AppTextStyles.caption),
-          onTap: () => AppBottomSheet.show(
-            context: context,
-            title: item['nama'],
-          subtitle: item['alamat'],
-            actions: [
-              SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _ubahToko(item)),
-              SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusToko(item)),
-            ],
-          ),
-        )).toList(),
+        children: _tokoList
+            .map((item) => AppListTile(
+                  leadingIcon: Icons.store,
+                  title: item['nama'],
+                  subtitle: item['alamat'] +
+                      (item['nomor_admin'] != null &&
+                              item['nomor_admin'].toString().isNotEmpty
+                          ? '\nWA: ${item['nomor_admin']}'
+                          : ''),
+                  trailing: Text('${item['jam_buka']} — ${item['jam_tutup']}',
+                      style: AppTextStyles.caption),
+                  onTap: () => AppBottomSheet.show(
+                    context: context,
+                    title: item['nama'],
+                    subtitle: item['alamat'],
+                    actions: [
+                      SheetAction(
+                          icon: Icons.edit,
+                          label: 'Ubah',
+                          color: AppColors.primary,
+                          onTap: () => _ubahToko(item)),
+                      SheetAction(
+                          icon: Icons.delete,
+                          label: 'Hapus',
+                          color: AppColors.danger,
+                          onTap: () => _hapusToko(item)),
+                    ],
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -658,7 +818,11 @@ class _BannerPageState extends State<_BannerPage> {
 
   Future<void> _loadData() async {
     final data = await DbService.getBanners();
-    if (mounted) setState(() { _banners = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _banners = data;
+        _loading = false;
+      });
   }
 
   Future<void> _uploadBanner() async {
@@ -667,9 +831,9 @@ class _BannerPageState extends State<_BannerPage> {
       source: ImageSource.gallery,
       imageQuality: 70, // Kompresi tahap 1 saat pilih gambar
     );
-    
+
     if (image == null) return;
-    
+
     final croppedFile = await ImageCropper().cropImage(
       sourcePath: image.path,
       aspectRatio: const CropAspectRatio(ratioX: 2, ratioY: 1),
@@ -696,12 +860,13 @@ class _BannerPageState extends State<_BannerPage> {
         try {
           final fileName = '${const Uuid().v4()}.jpg';
           final file = File(croppedFile.path);
-          final imageUrl = await DbService.uploadBannerImage(fileName, file.readAsBytesSync());
-          
+          final imageUrl = await DbService.uploadBannerImage(
+              fileName, file.readAsBytesSync());
+
           await DbService.insertBanner({
             'title': 'Banner', // Not used in UI but required by DB
-            'subtitle': '', 
-            'color': 'primary', 
+            'subtitle': '',
+            'color': 'primary',
             'icon_name': 'image',
             'image_url': imageUrl,
             'is_active': true,
@@ -800,14 +965,20 @@ class _VoucherPageState extends State<_VoucherPage> {
 
   Future<void> _loadData() async {
     final data = await DbService.getVouchers();
-    if (mounted) setState(() { _vouchers = data; _loading = false; });
+    if (mounted)
+      setState(() {
+        _vouchers = data;
+        _loading = false;
+      });
   }
 
   void _formVoucher({Map<String, dynamic>? item}) {
     final isNew = item == null;
     final kodeCtrl = TextEditingController(text: item?['kode'] ?? '');
-    final potonganCtrl = TextEditingController(text: item?['potongan']?.toString() ?? '');
-    final kuotaCtrl = TextEditingController(text: item?['kuota']?.toString() ?? '');
+    final potonganCtrl =
+        TextEditingController(text: item?['potongan']?.toString() ?? '');
+    final kuotaCtrl =
+        TextEditingController(text: item?['kuota']?.toString() ?? '');
     bool isActive = item?['is_active'] ?? true;
 
     AppDialog.show(
@@ -817,11 +988,18 @@ class _VoucherPageState extends State<_VoucherPage> {
           context: ctx,
           title: isNew ? 'Tambah Voucher' : 'Ubah Voucher',
           content: [
-            AppInput(controller: kodeCtrl, label: 'Kode Voucher (Misal: HEMAT10K)'),
+            AppInput(
+                controller: kodeCtrl, label: 'Kode Voucher (Misal: HEMAT10K)'),
             const SizedBox(height: 12),
-            AppInput(controller: potonganCtrl, label: 'Potongan Harga (Rp)', keyboardType: TextInputType.number),
+            AppInput(
+                controller: potonganCtrl,
+                label: 'Potongan Harga (Rp)',
+                keyboardType: TextInputType.number),
             const SizedBox(height: 12),
-            AppInput(controller: kuotaCtrl, label: 'Kuota Penggunaan', keyboardType: TextInputType.number),
+            AppInput(
+                controller: kuotaCtrl,
+                label: 'Kuota Penggunaan',
+                keyboardType: TextInputType.number),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -830,13 +1008,16 @@ class _VoucherPageState extends State<_VoucherPage> {
                 Switch(
                   value: isActive,
                   onChanged: (v) => setState(() => isActive = v),
-                  activeColor: AppColors.primary,
+                  activeThumbColor: AppColors.primary,
                 ),
               ],
             ),
           ],
           actions: [
-            AppButton(label: 'Batal', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx)),
+            AppButton(
+                label: 'Batal',
+                variant: AppButtonVariant.ghost,
+                onPressed: () => Navigator.pop(ctx)),
             AppButton(
               label: 'Simpan',
               variant: AppButtonVariant.primary,
@@ -859,7 +1040,8 @@ class _VoucherPageState extends State<_VoucherPage> {
                 if (isNew) {
                   await DbService.insertVoucher(data);
                 } else {
-                  await DbService.updateVoucher((item['id'] as num).toInt(), data);
+                  await DbService.updateVoucher(
+                      (item['id'] as num).toInt(), data);
                 }
                 if (mounted) Navigator.pop(ctx);
                 _loadData();
@@ -904,21 +1086,34 @@ class _VoucherPageState extends State<_VoucherPage> {
         emptyTitle: 'Belum ada voucher',
         emptySubtitle: 'Tekan tombol + untuk membuat voucher promo',
         onRefresh: _loadData,
-        children: _vouchers.map((item) => AppListTile(
-          leadingIcon: Icons.local_activity_outlined,
-          title: item['kode'],
-          subtitle: 'Kuota: ${item['kuota']} • ${item['is_active'] ? "Aktif" : "Non-aktif"}',
-          trailing: Text('-${formatRupiah(item['potongan'])}', style: AppTextStyles.bodyBold.copyWith(color: AppColors.success)),
-          onTap: () => AppBottomSheet.show(
-            context: context,
-            title: item['kode'],
-            subtitle: 'Potongan: ${formatRupiah(item['potongan'])}',
-            actions: [
-              SheetAction(icon: Icons.edit, label: 'Ubah', color: AppColors.primary, onTap: () => _formVoucher(item: item)),
-              SheetAction(icon: Icons.delete, label: 'Hapus', color: AppColors.danger, onTap: () => _hapusVoucher(item)),
-            ],
-          ),
-        )).toList(),
+        children: _vouchers
+            .map((item) => AppListTile(
+                  leadingIcon: Icons.local_activity_outlined,
+                  title: item['kode'],
+                  subtitle:
+                      'Kuota: ${item['kuota']} • ${item['is_active'] ? "Aktif" : "Non-aktif"}',
+                  trailing: Text('-${formatRupiah(item['potongan'])}',
+                      style: AppTextStyles.bodyBold
+                          .copyWith(color: AppColors.success)),
+                  onTap: () => AppBottomSheet.show(
+                    context: context,
+                    title: item['kode'],
+                    subtitle: 'Potongan: ${formatRupiah(item['potongan'])}',
+                    actions: [
+                      SheetAction(
+                          icon: Icons.edit,
+                          label: 'Ubah',
+                          color: AppColors.primary,
+                          onTap: () => _formVoucher(item: item)),
+                      SheetAction(
+                          icon: Icons.delete,
+                          label: 'Hapus',
+                          color: AppColors.danger,
+                          onTap: () => _hapusVoucher(item)),
+                    ],
+                  ),
+                ))
+            .toList(),
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
 import 'app_empty_state.dart';
 
 class AppListView extends StatelessWidget {
@@ -40,7 +39,8 @@ class AppListView extends StatelessWidget {
       children: <Widget>[
         if (header != null) header!,
         if (isEmpty)
-          AppEmptyState(icon: emptyIcon, title: emptyTitle, subtitle: emptySubtitle)
+          AppEmptyState(
+              icon: emptyIcon, title: emptyTitle, subtitle: emptySubtitle)
         else
           ...children,
       ],

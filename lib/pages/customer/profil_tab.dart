@@ -50,7 +50,11 @@ class ProfilTabState extends State<ProfilTab> {
       children: [
         Icon(icon, color: color, size: 28),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.text)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text)),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ],
@@ -61,7 +65,8 @@ class ProfilTabState extends State<ProfilTab> {
   Widget build(BuildContext context) {
     final email = AuthService.currentUser?.email ?? '-';
     final total = _transactions.length;
-    final menunggu = _transactions.where((e) => e['status'] == 'Menunggu').length;
+    final menunggu =
+        _transactions.where((e) => e['status'] == 'Menunggu').length;
     final proses = _transactions.where((e) => e['status'] == 'Proses').length;
     final selesai = _transactions.where((e) => e['status'] == 'Selesai').length;
     final saldo = (_profile?['saldo'] as num?)?.toInt() ?? 0;
@@ -84,7 +89,8 @@ class ProfilTabState extends State<ProfilTab> {
               : RefreshIndicator(
                   onRefresh: _loadData,
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
                     children: [
                       // Profile Header
                       Row(
@@ -93,12 +99,16 @@ class ProfilTabState extends State<ProfilTab> {
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 2),
+                              border: Border.all(
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.2),
+                                  width: 2),
                             ),
                             child: const CircleAvatar(
                               radius: 36,
                               backgroundColor: Colors.white,
-                              child: Icon(Icons.person, size: 40, color: Colors.grey),
+                              child: Icon(Icons.person,
+                                  size: 40, color: Colors.grey),
                             ),
                           ),
                           const SizedBox(width: 20),
@@ -108,46 +118,58 @@ class ProfilTabState extends State<ProfilTab> {
                               children: [
                                 Text(
                                   _profile?['nama'] ?? '-',
-                                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.text),
+                                  style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.text),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(email, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                                Text(email,
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.grey)),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Wallet Info (Minimalist)
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                          border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.1)),
                         ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.1),
+                                color: AppColors.primary.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.account_balance_wallet, color: AppColors.primary),
+                              child: const Icon(Icons.account_balance_wallet,
+                                  color: AppColors.primary),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Saldo Refund', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                  const Text('Saldo Refund',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 13)),
                                   const SizedBox(height: 4),
                                   Text(
                                     formatRupiah(saldo),
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.text),
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.text),
                                   ),
                                 ],
                               ),
@@ -155,48 +177,64 @@ class ProfilTabState extends State<ProfilTab> {
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Statistics (Flat grid)
-                      const Text('Statistik Pesanan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.text)),
+                      const Text('Statistik Pesanan',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.text)),
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                          border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.1)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _statItem('$total', 'Total', Icons.receipt_long, Colors.blue),
-                            _statItem('$menunggu', 'Antre', Icons.access_time, Colors.orange),
-                            _statItem('$proses', 'Proses', Icons.local_laundry_service, Colors.indigo),
-                            _statItem('$selesai', 'Selesai', Icons.check_circle, Colors.green),
+                            _statItem('$total', 'Total', Icons.receipt_long,
+                                Colors.blue),
+                            _statItem('$menunggu', 'Antre', Icons.access_time,
+                                Colors.orange),
+                            _statItem('$proses', 'Proses',
+                                Icons.local_laundry_service, Colors.indigo),
+                            _statItem('$selesai', 'Selesai', Icons.check_circle,
+                                Colors.green),
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Action Buttons
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                          border: Border.all(
+                              color: Colors.grey.withValues(alpha: 0.1)),
                         ),
                         child: Column(
                           children: [
                             ListTile(
                               leading: Container(
                                 padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
-                                child: const Icon(Icons.logout, color: Colors.red, size: 20),
+                                decoration: BoxDecoration(
+                                    color: Colors.red.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle),
+                                child: const Icon(Icons.logout,
+                                    color: Colors.red, size: 20),
                               ),
-                              title: const Text('Keluar Akun', style: TextStyle(fontWeight: FontWeight.w500, color: Colors.red)),
+                              title: const Text('Keluar Akun',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.red)),
                               onTap: () => AuthService.logout(),
                             ),
                           ],

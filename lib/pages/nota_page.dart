@@ -33,7 +33,8 @@ class _NotaPageState extends State<NotaPage> {
       final pngBytes = byteData!.buffer.asUint8List();
 
       final dir = Directory.systemTemp;
-      final file = File('${dir.path}/nota_${widget.trx['kode'] ?? widget.trx['id']}.png');
+      final file = File(
+          '${dir.path}/nota_${widget.trx['kode'] ?? widget.trx['id']}.png');
       await file.writeAsBytes(pngBytes);
 
       await Share.shareXFiles([XFile(file.path)],
@@ -77,14 +78,14 @@ class _NotaPageState extends State<NotaPage> {
                     Image.asset('assets/images/logo.png',
                         height: 64,
                         errorBuilder: (_, __, ___) => Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.local_laundry_service,
-                              size: 48, color: AppColors.primary),
-                        )),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.local_laundry_service,
+                                  size: 48, color: AppColors.primary),
+                            )),
                     const SizedBox(height: 8),
                     const Text('LaundryIN',
                         style: TextStyle(
@@ -128,8 +129,7 @@ class _NotaPageState extends State<NotaPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
           Flexible(
             child: Text(
               value,

@@ -25,16 +25,18 @@ class AppEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 64, color: AppColors.primary),
           ),
           const SizedBox(height: 24),
-          Text(title, style: AppTextStyles.heading, textAlign: TextAlign.center),
+          Text(title,
+              style: AppTextStyles.heading, textAlign: TextAlign.center),
           if (subtitle != null) ...[
             const SizedBox(height: 8),
-            Text(subtitle!, style: AppTextStyles.body, textAlign: TextAlign.center),
+            Text(subtitle!,
+                style: AppTextStyles.body, textAlign: TextAlign.center),
           ],
           if (action != null) ...[
             const SizedBox(height: 24),

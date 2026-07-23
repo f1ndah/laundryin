@@ -16,8 +16,9 @@ import '../../widgets/app_bottom_sheet.dart';
 import '../../widgets/app_fab.dart';
 import '../../widgets/app_snackbar.dart';
 import '../nota_page.dart';
+
 class TransaksiTab extends StatefulWidget {
-  const TransaksiTab();
+  const TransaksiTab({super.key});
 
   @override
   State<TransaksiTab> createState() => TransaksiTabState();
@@ -59,11 +60,17 @@ class TransaksiTabState extends State<TransaksiTab> {
     final trx = _transactions.firstWhere((t) => t['id'] == id);
     await DbService.batalTransaction(id);
     if (mounted) {
-      AppSnackbar.success(context, 'Transaksi dibatalkan. Dana dikembalikan ke saldo.');
+      AppSnackbar.success(
+          context, 'Transaksi dibatalkan. Dana dikembalikan ke saldo.');
     }
     _loadData();
-    await Supabase.instance.client.functions.invoke('wa',
-      body: {'type': 'UPDATE', 'table': 'transactions', 'record': {...trx, 'status': 'Batal'}},
+    await Supabase.instance.client.functions.invoke(
+      'wa',
+      body: {
+        'type': 'UPDATE',
+        'table': 'transactions',
+        'record': {...trx, 'status': 'Batal'}
+      },
     ).catchError((e) => debugPrint('WA Error: $e'));
   }
 
@@ -112,7 +119,9 @@ class TransaksiTabState extends State<TransaksiTab> {
         actions: [
           if (onSudahBayar == null)
             AppButton(
-                label: 'Tutup', variant: AppButtonVariant.ghost, onPressed: () => Navigator.pop(ctx))
+                label: 'Tutup',
+                variant: AppButtonVariant.ghost,
+                onPressed: () => Navigator.pop(ctx))
           else
             AppButton(
               label: 'Sudah Bayar',
@@ -188,7 +197,7 @@ class TransaksiTabState extends State<TransaksiTab> {
             title: 'Tambah Transaksi',
             content: [
               DropdownButtonFormField<int>(
-                value: tokoId,
+                initialValue: tokoId,
                 items: _tokoList
                     .map((e) => DropdownMenuItem<int>(
                           value: e['id'] as int,
@@ -212,7 +221,7 @@ class TransaksiTabState extends State<TransaksiTab> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: jenis,
+                initialValue: jenis,
                 items: _layanan
                     .map((e) => DropdownMenuItem<String>(
                           value: e['jenis'] as String,
@@ -234,7 +243,7 @@ class TransaksiTabState extends State<TransaksiTab> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: metode,
+                initialValue: metode,
                 items: [
                   const DropdownMenuItem(value: 'QRIS', child: Text('QRIS')),
                   DropdownMenuItem(
@@ -270,7 +279,8 @@ class TransaksiTabState extends State<TransaksiTab> {
                         setDialogState(() {
                           potonganVoucher = (v['potongan'] as num).toInt();
                           voucherId = (v['id'] as num).toInt();
-                          voucherMessage = 'Diskon ${formatRupiah(potonganVoucher)} diterapkan!';
+                          voucherMessage =
+                              'Diskon ${formatRupiah(potonganVoucher)} diterapkan!';
                         });
                       } else {
                         setDialogState(() {
@@ -289,7 +299,9 @@ class TransaksiTabState extends State<TransaksiTab> {
                   child: Text(
                     voucherMessage,
                     style: TextStyle(
-                      color: voucherId != null ? AppColors.success : AppColors.danger,
+                      color: voucherId != null
+                          ? AppColors.success
+                          : AppColors.danger,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -315,7 +327,9 @@ class TransaksiTabState extends State<TransaksiTab> {
                   final layanan = _layanan.firstWhere(
                       (e) => e['jenis'] == jenis,
                       orElse: () => {'harga': 0});
-                  int totalHarga = (beratVal * (layanan['harga'] as int)).toInt() - potonganVoucher;
+                  int totalHarga =
+                      (beratVal * (layanan['harga'] as int)).toInt() -
+                          potonganVoucher;
                   if (totalHarga < 0) totalHarga = 0;
                   final alamat = alamatCtrl.text.trim();
                   final metodeBayar = metode;
@@ -344,10 +358,16 @@ class TransaksiTabState extends State<TransaksiTab> {
                       }
                       if (!mounted) return;
                       _loadData();
-                      _showTicket(inserted['kode'] ?? inserted['id'], totalHarga);
+                      _showTicket(
+                          inserted['kode'] ?? inserted['id'], totalHarga);
                       // ponytail: fire-and-forget WA notif
-                      await Supabase.instance.client.functions.invoke('wa',
-                        body: {'type': 'INSERT', 'table': 'transactions', 'record': inserted},
+                      await Supabase.instance.client.functions.invoke(
+                        'wa',
+                        body: {
+                          'type': 'INSERT',
+                          'table': 'transactions',
+                          'record': inserted
+                        },
                       ).catchError((e) => debugPrint('WA Error: $e'));
                     } catch (e) {
                       if (mounted) {
@@ -360,7 +380,8 @@ class TransaksiTabState extends State<TransaksiTab> {
                     final ok = await DbService.deductSaldo(user.id, totalHarga);
                     if (!ok) {
                       if (context.mounted) {
-                        AppSnackbar.error(context, 'Saldo tidak cukup (${formatRupiah(saldo)})');
+                        AppSnackbar.error(context,
+                            'Saldo tidak cukup (${formatRupiah(saldo)})');
                       }
                       return;
                     }
@@ -416,7 +437,10 @@ class TransaksiTabState extends State<TransaksiTab> {
               style: const TextStyle(fontSize: 16)),
         ],
         actions: [
-          AppButton(label: 'OK', variant: AppButtonVariant.primary, onPressed: () => Navigator.pop(ctx)),
+          AppButton(
+              label: 'OK',
+              variant: AppButtonVariant.primary,
+              onPressed: () => Navigator.pop(ctx)),
         ],
       ),
     );
@@ -480,7 +504,7 @@ class TransaksiTabState extends State<TransaksiTab> {
               const SizedBox(width: 8),
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _filter,
+                  initialValue: _filter,
                   isExpanded: true,
                   icon:
                       const Icon(Icons.filter_list, color: AppColors.textLight),
@@ -519,8 +543,7 @@ class TransaksiTabState extends State<TransaksiTab> {
         children: filtered.map((trx) {
           final tanggal = DateFormat('dd MMM yyyy, HH:mm')
               .format(DateTime.parse(trx['tanggal']));
-          final toko = _tokoList.firstWhere(
-              (t) => t['id'] == trx['toko_id'],
+          final toko = _tokoList.firstWhere((t) => t['id'] == trx['toko_id'],
               orElse: () => {'nama': '-', 'nomor_admin': ''});
           final tokoName = toko['nama'];
           final noWa = toko['nomor_admin']?.toString() ?? '';
@@ -536,30 +559,30 @@ class TransaksiTabState extends State<TransaksiTab> {
               subtitle: formatRupiah(trx['harga']),
               actions: [
                 SheetAction(
-                    icon: Icons.storefront,
-                    label: tokoName ?? '-',
-                    trailing: noWa.isNotEmpty
-                        ? IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: const Icon(Icons.message,
-                                color: Colors.green, size: 22),
-                            onPressed: () => launchUrl(
-                              Uri.parse('https://wa.me/$noWa'),
-                              mode: LaunchMode.externalApplication,
-                            ),
-                          )
-                        : null,
+                  icon: Icons.storefront,
+                  label: tokoName ?? '-',
+                  trailing: noWa.isNotEmpty
+                      ? IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.message,
+                              color: Colors.green, size: 22),
+                          onPressed: () => launchUrl(
+                            Uri.parse('https://wa.me/$noWa'),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        )
+                      : null,
                 ),
                 SheetAction(
-                    icon: Icons.receipt_long,
-                    label: 'Lihat Nota',
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) =>
-                              NotaPage(trx: trx, tokoName: tokoName ?? '-')),
-                    ),
+                  icon: Icons.receipt_long,
+                  label: 'Lihat Nota',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            NotaPage(trx: trx, tokoName: tokoName ?? '-')),
+                  ),
                 ),
                 SheetAction(icon: Icons.access_time, label: tanggal),
                 if (trx['status'] != 'Selesai' && trx['status'] != 'Batal')
@@ -594,5 +617,3 @@ class TransaksiTabState extends State<TransaksiTab> {
     );
   }
 }
-
-

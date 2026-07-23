@@ -25,7 +25,8 @@ class HomeTabState extends State<HomeTab> {
   int _saldo = 0;
   bool _loading = true;
 
-  final PageController _bannerController = PageController(viewportFraction: 0.9);
+  final PageController _bannerController =
+      PageController(viewportFraction: 0.9);
   int _currentBannerIndex = 0;
 
   @override
@@ -43,7 +44,7 @@ class HomeTabState extends State<HomeTab> {
   Future<void> _loadRecent() async {
     final user = AuthService.currentUser;
     if (user == null) return;
-    
+
     final data = await DbService.getUserTransactions(user.id);
     final profile = await AuthService.getProfile();
     final saldo = await DbService.getSaldo(user.id);
@@ -71,7 +72,8 @@ class HomeTabState extends State<HomeTab> {
           children: [
             // Custom Header
             Container(
-              padding: const EdgeInsets.only(top: 64, left: 24, right: 24, bottom: 48),
+              padding: const EdgeInsets.only(
+                  top: 64, left: 24, right: 24, bottom: 48),
               decoration: const BoxDecoration(
                 color: AppColors.primary,
                 borderRadius: BorderRadius.only(
@@ -90,21 +92,29 @@ class HomeTabState extends State<HomeTab> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Selamat datang,', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                      Text(_userName, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      const Text('Selamat datang,',
+                          style:
+                              TextStyle(color: Colors.white70, fontSize: 14)),
+                      Text(_userName,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                    icon: const Icon(Icons.notifications_outlined,
+                        color: Colors.white),
                     onPressed: () {
-                      AppSnackbar.info(context, 'Fitur notifikasi dalam pengembangan 🛠️');
+                      AppSnackbar.info(
+                          context, 'Fitur notifikasi dalam pengembangan 🛠️');
                     },
                   ),
                 ],
               ),
             ),
-            
+
             // Wallet Card & Quick Actions overlapping header
             Transform.translate(
               offset: const Offset(0, -32),
@@ -125,25 +135,31 @@ class HomeTabState extends State<HomeTab> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.account_balance_wallet, color: AppColors.primary),
+                            child: const Icon(Icons.account_balance_wallet,
+                                color: AppColors.primary),
                           ),
                           const SizedBox(width: 16),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Saldo Kamu', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                              const Text('Saldo Kamu',
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 12)),
                               const SizedBox(height: 2),
-                              Text(formatRupiah(_saldo), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+                              Text(formatRupiah(_saldo),
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.text)),
                             ],
                           ),
                         ],
                       ),
                     ),
-                    if (_banners.isNotEmpty)
-                      const SizedBox(height: 24),
+                    if (_banners.isNotEmpty) const SizedBox(height: 24),
 
                     // Banner Carousel
                     if (_banners.isNotEmpty)
@@ -175,13 +191,17 @@ class HomeTabState extends State<HomeTab> {
                                         children: [
                                           InteractiveViewer(
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(16),
-                                              child: Image.network(imageUrl, fit: BoxFit.contain),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              child: Image.network(imageUrl,
+                                                  fit: BoxFit.contain),
                                             ),
                                           ),
                                           IconButton(
-                                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                                            onPressed: () => Navigator.pop(context),
+                                            icon: const Icon(Icons.close,
+                                                color: Colors.white, size: 30),
+                                            onPressed: () =>
+                                                Navigator.pop(context),
                                           ),
                                         ],
                                       ),
@@ -190,7 +210,8 @@ class HomeTabState extends State<HomeTab> {
                                 }
                               },
                               child: Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 4),
                                 decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   borderRadius: BorderRadius.circular(16),
@@ -201,20 +222,25 @@ class HomeTabState extends State<HomeTab> {
                                       ? Image.network(
                                           imageUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return const Center(child: Icon(Icons.broken_image, color: Colors.white, size: 32));
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return const Center(
+                                                child: Icon(Icons.broken_image,
+                                                    color: Colors.white,
+                                                    size: 32));
                                           },
                                         )
-                                      : const Center(child: Icon(Icons.image, color: Colors.white, size: 32)),
+                                      : const Center(
+                                          child: Icon(Icons.image,
+                                              color: Colors.white, size: 32)),
                                 ),
                               ),
                             );
                           },
                         ),
                       ),
-                    if (_banners.isNotEmpty)
-                      const SizedBox(height: 12),
-                    
+                    if (_banners.isNotEmpty) const SizedBox(height: 12),
+
                     // Banner Indicator
                     if (_banners.isNotEmpty)
                       Row(
@@ -226,33 +252,43 @@ class HomeTabState extends State<HomeTab> {
                             height: 6,
                             width: _currentBannerIndex == index ? 16 : 6,
                             decoration: BoxDecoration(
-                              color: _currentBannerIndex == index ? AppColors.primary : Colors.grey.withOpacity(0.3),
+                              color: _currentBannerIndex == index
+                                  ? AppColors.primary
+                                  : Colors.grey.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(3),
                             ),
                           );
                         }),
                       ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Quick Actions
                     Row(
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LokasiPage())),
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const LokasiPage())),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                                border: Border.all(
+                                    color: Colors.grey.withValues(alpha: 0.1)),
                               ),
                               child: Column(
                                 children: [
-                                  const Icon(Icons.location_on, color: AppColors.primary, size: 28),
+                                  const Icon(Icons.location_on,
+                                      color: AppColors.primary, size: 28),
                                   const SizedBox(height: 8),
-                                  const Text('Lokasi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  const Text('Lokasi',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
@@ -261,19 +297,27 @@ class HomeTabState extends State<HomeTab> {
                         const SizedBox(width: 16),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PricelistPage())),
+                            onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const PricelistPage())),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                                border: Border.all(
+                                    color: Colors.grey.withValues(alpha: 0.1)),
                               ),
                               child: Column(
                                 children: [
-                                  const Icon(Icons.price_change, color: AppColors.primary, size: 28),
+                                  const Icon(Icons.price_change,
+                                      color: AppColors.primary, size: 28),
                                   const SizedBox(height: 8),
-                                  const Text('Pricelist', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  const Text('Pricelist',
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
@@ -285,7 +329,7 @@ class HomeTabState extends State<HomeTab> {
                 ),
               ),
             ),
-            
+
             // Recent Transactions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -294,20 +338,27 @@ class HomeTabState extends State<HomeTab> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Transaksi Terbaru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.text)),
+                    const Text('Transaksi Terbaru',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.text)),
                     const SizedBox(height: 16),
                     if (_loading)
                       Column(
-                        children: List.generate(3, (index) => AppShimmer(
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4),
-                            height: 76,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        )),
+                        children: List.generate(
+                            3,
+                            (index) => AppShimmer(
+                                  child: Container(
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    height: 76,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                )),
                       )
                     else if (_recent.isEmpty)
                       const AppEmptyState(
@@ -317,7 +368,8 @@ class HomeTabState extends State<HomeTab> {
                       )
                     else
                       ..._recent.map((trx) {
-                        final tanggal = DateFormat('dd MMM yyyy, HH:mm').format(DateTime.parse(trx['tanggal']));
+                        final tanggal = DateFormat('dd MMM yyyy, HH:mm')
+                            .format(DateTime.parse(trx['tanggal']));
                         return AppTransactionCard(
                           title: trx['jenis'] ?? '-',
                           subtitle: '${trx['berat']} Kg • $tanggal',
